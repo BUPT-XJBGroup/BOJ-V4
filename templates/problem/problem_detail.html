@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
 
     <!--CombineResourcesFilter-->
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/prettify.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/clear.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/style2.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/second-level-menu.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/problem-statement.css" type="text/css" charset="utf-8">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/ttypography.css" type="text/css" charset="utf-8">
@@ -61,61 +61,61 @@
 
             </div>
         </div>
-    </div>
-    <div id="pageContent" class="content-with-sidebar">
-        <div class="second-level-menu">
-            <ul class="second-level-menu-list">
-                <li class="backLava" style="position: absolute; display: block; margin: 0; padding: 0; left: 0; top: 0; width: 63px; height: 20px; overflow: hidden;">
-                    <div class="leftLava"></div>
-                    <div class="bottomLava"></div>
-                    <div class="cornerLava"></div>
-                </li>
-                <li><a href="/submit">Submit</a></li>
-                <li><a href="/submission">Submissions</a></li>
-            </ul>
-        </div>
+        <div id="pageContent" class="content-with-sidebar">
+            <div class="second-level-menu">
+                <ul class="second-level-menu-list">
+                    <li class="backLava" style="position: absolute; display: block; margin: 0; padding: 0; left: 0; top: 0; width: 63px; height: 20px; overflow: hidden;">
+                        <div class="leftLava"></div>
+                        <div class="bottomLava"></div>
+                        <div class="cornerLava"></div>
+                    </li>
+                    <li><a href="/submit">Submit</a></li>
+                    <li><a href="/submission">Submissions</a></li>
+                </ul>
+            </div>
 
-        <div class="problemindexholder" problemindex={{ object.pk }}>
-            <div class="ttypography">
-                <div class="problem-statement">
-                    <div class="header">
-                        <div class="title">{{ object.title }}</div>
-                        <div class="time-limit"><div class="property-title">time limit</div>{{ object.time_limit }}</div>
-                        <div class="memory-limit"><div class="property-title">memory limit per test</div>{{ object.memory_limit }}</div>
-                        <div class="spj"><div class="property-title">special judge</div>{% if object.is_spj %}Yes{% else %}No{% endif %}</div>
-                        <div class="input-file"><div class="property-title">input</div>inputfilename{{ INPUTFILE }}</div>
-                        <div class="output-file"><div class="property-title">output</div>outputfilename{{ OUTPUTFILE }}</div>
-                        <div class="code-length-limit"><div class="property-title">code length limit</div>{{ object.code_length_limit }}</div>
-                        <div class="update-time"><div class="property-title">last update time</div>{{ object.last_updated_time }}</div>
-                        <div class="author"><div class="property-title">author</div>{{ object.superadmin }}</div>
-                    </div>
-                    <div>
-                        <p>
-                            <div id="test-editormd-view">
-                                {{ object.problem_desc }}
-                            </div>
-                        </p>
-                    </div>
-                    <div class="input-specification">
-                        <div class="section-title">Input</div>
-                        <p>Input description{{ INPUT }}</p>
-                    </div>
-                    <div class="output-specification">
-                        <div class="section-title">Output</div>
-                        <p>Output description{{ OUTPUT }}</p>
-                    </div>
-                    <div class="sample-tests">
-                        <div class="section-title">Examples</div>
-                        <div class="sample-test">
-                            <div class="input"><div class="title">Input</div><pre>sampleinput1{{ SAMPLEINPUT }}</pre></div>
-                            <div class="output"><div class="title">Output</div><pre>sampleoutput1{{ SAMPLEOUTPUT }}</pre></div>
-                            <div class="input"><div class="title">Input</div><pre>sampleinput2{{ SAMPLEINPUT }}</pre></div>
-                            <div class="output"><div class="title">Output</div><pre>sampleoutput2{{ SAMPLEOUTPUT }}</pre></div>
+            <div class="problemindexholder" problemindex={{ object.pk }}>
+                <div class="ttypography">
+                    <div class="problem-statement">
+                        <div class="header">
+                            <div class="title">{{ object.title }}</div>
+                            <div class="time-limit"><div class="property-title">time limit</div>{{ object.time_limit }}</div>
+                            <div class="memory-limit"><div class="property-title">memory limit per test</div>{{ object.memory_limit }}</div>
+                            <div class="spj"><div class="property-title">special judge</div>{% if object.is_spj %}Yes{% else %}No{% endif %}</div>
+                            <div class="input-file"><div class="property-title">input</div>inputfilename{{ INPUTFILE }}</div>
+                            <div class="output-file"><div class="property-title">output</div>outputfilename{{ OUTPUTFILE }}</div>
+                            <div class="code-length-limit"><div class="property-title">code length limit</div>{{ object.code_length_limit }}</div>
+                            <div class="update-time"><div class="property-title">last update time</div>{{ object.last_updated_time }}</div>
+                            <div class="author"><div class="property-title">author</div>{{ object.superadmin }}</div>
                         </div>
-                    </div>
-                    <div class="note">
-                        <div class="section-title">Note</div>
-                        <p>Note description{{ NOTE }}</p>
+                        <div>
+                            <p>
+                                <div id="test-editormd-view">
+                                    {{ object.problem_desc }}
+                                </div>
+                            </p>
+                        </div>
+                        <div class="input-specification">
+                            <div class="section-title">Input</div>
+                            <p>Input description{{ INPUT }}</p>
+                        </div>
+                        <div class="output-specification">
+                            <div class="section-title">Output</div>
+                            <p>Output description{{ OUTPUT }}</p>
+                        </div>
+                        <div class="sample-tests">
+                            <div class="section-title">Examples</div>
+                            <div class="sample-test">
+                                <div class="input"><div class="title">Input</div><pre>sampleinput1{{ SAMPLEINPUT }}</pre></div>
+                                <div class="output"><div class="title">Output</div><pre>sampleoutput1{{ SAMPLEOUTPUT }}</pre></div>
+                                <div class="input"><div class="title">Input</div><pre>sampleinput2{{ SAMPLEINPUT }}</pre></div>
+                                <div class="output"><div class="title">Output</div><pre>sampleoutput2{{ SAMPLEOUTPUT }}</pre></div>
+                            </div>
+                        </div>
+                        <div class="note">
+                            <div class="section-title">Note</div>
+                            <p>Note description{{ NOTE }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
