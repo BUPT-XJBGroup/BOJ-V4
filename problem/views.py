@@ -175,7 +175,7 @@ class ProblemDetailView(DetailView):
 
     model = Problem
     permission_classes = (IsAuthenticated, )
-#    template_name = 'problem/problem_detail.html'
+    template_name = 'problem/problem_detail.html'
 
     def get_queryset(self):
         gp_can_view = get_objects_for_user(
@@ -215,7 +215,8 @@ class ProblemDetailView(DetailView):
 class ProblemCreateView(CreateView):
     model = Problem
     form_class = ProblemForm
-    template_name_suffix = '_create_form'
+    # template_name_suffix = '_create_form'
+    template_name = 'problem/problem_create_form.html'
 
     @method_decorator(staff_member_required)
     def dispatch(self, request, *args, **kwargs):
@@ -223,8 +224,16 @@ class ProblemCreateView(CreateView):
 
     def form_valid(self, form):
         print '=========form valid==============='
+        print self.request.POST
         self.object = form.save(commit=False)
         self.object.superadmin = self.request.user
+        mp = {}
+        mp['desc'] = {
+            self.request.desc,
+            self.request.sampleinput,
+            self.request.sampleoutput,
+        }
+        self.object.desc = mp
         self.object.save()
         return super(ProblemCreateView, self).form_valid(form)
 
@@ -240,6 +249,18 @@ class ProblemCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('problem:upload-new', args=[self.object.pk])
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        """
+        if self.problem_create_form.is_valid() :
+            gg = ProblemForm(**self.group_profile_form.cleaned_data)
+            gg.superadmin = self.request.user
+            gg.save()
+            ProblemForm(request.POST, instance=gg.admin_group).save()
+            return HttpResponseRedirect(reverse('problem-detail', args=[gg.pk, ]))
+        """
+        return super(ProblemCreateView, self).render_to_response(context)
 
 
 class ProblemUpdateView(UpdateView):

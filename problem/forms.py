@@ -9,7 +9,7 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        exclude = ["superadmin", "is_checked"]
+        exclude = ["superadmin", "is_checked", "problem_desc"]
         widgets = {
            'groups': ModelSelect2MultipleWidget(
                 search_fields=[

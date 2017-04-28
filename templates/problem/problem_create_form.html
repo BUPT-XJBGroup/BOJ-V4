@@ -43,7 +43,7 @@
             <div class="roundbox sidebox" style="">
                 <div class="roundbox-lt">&nbsp;</div>
                 <div class="roundbox-rt">&nbsp;</div>
-                <div class="caption titled">→ admin
+                <div class="caption titled"> admin
                     <div class="top-links">
                     </div>
                 </div>
@@ -62,95 +62,83 @@
             </div>
 
         </div>
-    </div>
-    <div id="pageContent" class="content-with-sidebar">
-        <div class="second-level-menu">
-            <ul class="second-level-menu-list">
-                <li class="backLava" style="position: absolute; display: block; margin: 0px; padding: 0px; left: 96.3281px; top: 0px; width: 56px; height: 20px; overflow: hidden;">
-                    <div class="leftLava"></div>
-                    <div class="bottomLava"></div>
-                    <div class="cornerLava"></div>
-                </li>
-                <li><a href="/problem/add">Add Problem</a></li>
-            </ul>
-        </div>
+
+        <div id="pageContent" class="content-with-sidebar">
+            <div class="second-level-menu">
+                <ul class="second-level-menu-list">
+                    <li class="backLava" style="position: absolute; display: block; margin: 0px; padding: 0px; left: 96.3281px; top: 0px; width: 56px; height: 20px; overflow: hidden;">
+                        <div class="leftLava"></div>
+                        <div class="bottomLava"></div>
+                        <div class="cornerLava"></div>
+                    </li>
+                    <li><a href="/problem/add">Add Problem</a></li>
+                </ul>
+            </div>
 
 
-        <div class="roundbox " style="padding:1em 1em 0 1em;">
-            <div class="roundbox-lt">&nbsp;</div>
-            <div class="roundbox-rt">&nbsp;</div>
-            <div class="roundbox-lb">&nbsp;</div>
-            <div class="roundbox-rb">&nbsp;</div>
-            <div class="userbox">
-                <div class="info">
-                    <h3>Add New Problem</h3>
-                    <form id="settings-form" method="post" action="" style="width:100%;" _lpchecked="1">
-                        <table class="table-form" style="margin-left:0;">
-                            <input type="hidden" name="action" value="saveChanges">
-                            <input type="hidden" name="ftaa" value="">
-                            <input type="hidden" name="bfaa" value="">
+            <div class="roundbox " style="padding:1em 1em 0 1em;">
+                <div class="roundbox-lt">&nbsp;</div>
+                <div class="roundbox-rt">&nbsp;</div>
+                <div class="roundbox-lb">&nbsp;</div>
+                <div class="roundbox-rb">&nbsp;</div>
 
-                            <tbody>
-                                <tr>
-                                    <td class="field-name">Problem Title</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="title"  autocomplete="off" value="Untitled"></td>
-                                </tr>
+                <div class="userbox">
+                    <div class="info">
+                        <h3>Add New Problem</h3>
+                        <form id="settings-form" method="post" action="" style="width:100%;">
+                            <table class="table-form" style="margin-left:0;">
+                                {% bootstrap_form group_form %}
+                                <tbody>
+                                    <tr>
+                                        <td class="field-name">Problem Title</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="title"  autocomplete="off" value="Untitled"></td>
+                                    </tr>
 
-                                <tr>
-                                    <td class="field-name">Time Limit(ms)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: pointer;" name="timelimit" type="number" value="1000" autocomplete="off"></td>
-                                </tr>
+                                    <tr>
+                                        <td class="field-name">Time Limit(ms)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: pointer;" name="timelimit" type="number" value="1000" autocomplete="off"></td>
+                                    </tr>
 
-                                <tr>
-                                    <td class="field-name">Memory Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="memorylimit" type="number" autocomplete="off" value="64"></td>
-                                </tr>
+                                    <tr>
+                                        <td class="field-name">Memory Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="memorylimit" type="number" autocomplete="off" value="64"></td>
+                                    </tr>
 
-                                <tr>
-                                    <td class="field-name">Code Length Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="codelengthlimit" type="number" autocomplete="off" value="64"></td>
-                                </tr>
+                                    <tr>
+                                        <td class="field-name">Code Length Limit(MB)</td><td><input style="width: 15em; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;" name="codelengthlimit" type="number" autocomplete="off" value="64"></td>
+                                    </tr>
 
 
 
-                                <tr>
-                                    <td class="field-name">Problem Description</td>
-                                    <td>
-                                        <div id="test-editormd">
-                                            <textarea style="display:none;"></textarea>
+                                    <tr>
+                                        <td class="field-name">Problem Description</td>
+                                        <td>
+                                            <div id="test-editormd">
+                                                <textarea style="display:none;"></textarea>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="field-name">special judge</td>
+                                        <td>
+                                            <select id="spj" name="spj" style="width: 25em;">
+                                                <option value="Yes">Yes</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="table-form">
+                                <tbody>
+                                    <tr><td>
+                                        <div style="text-align:center;width:100%;">
+                                            <input class="submit" type="submit" value="Submit">
                                         </div>
-                                    </td>
-                                </tr>
-
-
-                                <tr>
-                                    <td class="field-name">Allowed Language</td>
-                                    <td>
-                                        <select id="Language" name="Language" style="width: 25em;">
-                                            <option value="C++">C++</option>
-                                        </select>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="field-name">special judge</td>
-                                    <td>
-                                        <select id="spj" name="spj" style="width: 25em;">
-                                            <option value="Yes">Yes</option>
-                                            <option value="No">No</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <table class="table-form">
-                            <tbody>
-                                <tr><td>
-                                    <div style="text-align:center;width:100%;">
-                                        <input class="submit" type="submit" value="Submit">
-                                    </div>
-                                </td></tr>
-                            </tbody>
-                        </table>
-                        <input type="hidden" name="_tta" value="37">
-                    </form>
+                                    </td></tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

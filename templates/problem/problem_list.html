@@ -3,6 +3,37 @@
 {% load i18n %}
 {% load bootstrap3 %}
 {% load django_tables2 %}
+{% load staticfiles %}
+{% block extra_head_base %}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/font-awesome.min.css" type="text/css" charset="utf-8">
+
+    <!--CombineResourcesFilter-->
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/planeui.min.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/prettify.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/clear.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/style2.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/second-level-menu.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/roundbox.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/datatable.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/table-form.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/topic.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/sidebar-menu.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/problem_list.css" type="text/css" charset="utf-8">
+    <style>
+        #problem-table th a{color:inherit;display:block;padding:4px 10px;}
+        #category,#types{visibility:hidden;}
+    </style>
+    <style>
+        #problem-table
+        th{padding:0;}
+        .sidebox h3{margin:0 -5px;background:#3b3b3b;border-radius:4px 4px 0 0;color:white;padding-top:2px;padding-bottom:4px;padding-left:7px;}
+        .sidebox h3 .fa{color:white;float:right;margin:0.2em 0.4em 0 0;}
+        .sidebox{border-top-left-radius:4px;border-top-right-radius:4px;padding:0 5px!important;padding-bottom:1.5em!important;}
+        .sidebox-content{border:1px solid #9D9D9D;border-top:none;margin:0 -5px;padding:0 0.5em;padding-top:1px;padding-bottom:3px;}
+    </style>
+{% endblock %}
 
 {% block head_title %}Problem List{% endblock %}
 
@@ -10,29 +41,206 @@
 
 {% block body_base %}
 <section class="jumbotron">
-  <div class="container">
-    {% include "_messages.html" %}
-    <h1>Articles</h1>
-    <div>
-    </div>
-    <div>
-      <form id="filter" action="" method="get">
-        <div class="col-lg-2">
-          {% bootstrap_form filter.form %}
+    <div class="container">
+        {% include "_messages.html" %}
+        <article id="content">
+            <div class="page-title">
+                <ul style="margin: 0px 0px 8px;padding:0px;width:100%" class="tabs">
+                    <h2 style="color:#393630; display: inline-block">题目</h2>
+                    <span class="spacer"></span>
+                </ul>
+            </div>
+
+
+            <div id="content-body">
+                <div id="common-content">
+                    <div id="content-right" class="problems">
+                        <div class="info-float">
+                            <div class="sidebox">
+                                <h3>题目搜索 <i class="fa fa-search"></i>
+                                </h3>
+                                <div class="sidebox-content">
+                                    <form id="filter-form" name="form" action="" method="get">
+                                        <div>
+                                            <input id="search" type="text" name="search" placeholder="搜索题目…">
+                                        </div>
+                                        <div>
+                                            <input id="show_types" type="checkbox" name="show_types" value="1">
+                                            <label for="show_types">显示题目类型</label>
+                                        </div>
+                                        <div class="filter-form-group">
+                                            <label for="category"><i>分类</i></label>
+                                            <select id="category" name="category" onchange="form.submit()" tabindex="-1" class="select2-hidden-accessible" aria-hidden="true" style="visibility: visible;">
+                                            </select>
+                                            <span class="select2 select2-container select2-container--default" dir="ltr" style="width: 287px;">
+                                                <span class="selection">
+                                                    <span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-category-container">
+                                                        <span class="select2-selection__rendered" id="select2-category-container" title="所有">所有</span>
+                                                        <span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>
+                                                    </span>
+                                                </span>
+                                                <span class="dropdown-wrapper" aria-hidden="true"></span>
+                                            </span>
+                                        </div>
+                                        <div class="form-submit-group">
+                                            <a id="go" onclick="form.submit()" class="button">Search</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="content-left" class="problems">
+                        <div style="margin-bottom: 7px; margin-top: 3px;">
+                            <ul class="pagination">
+                            </ul>
+                        </div>
+                        {% render_table problems_table %}
+                        {% if request.user.is_staff %}
+                            <div>
+                                <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">Add</a>
+                            </div>
+                        {% endif %}
+                        {% bootstrap_pagination page_obj %}
+                    </div>
+                </div><br>
+            </div>
+
+        </article>
+
+        <div>
+          <form id="filter" action="" method="get">
+            <div class="col-lg-2">
+              {% bootstrap_form filter.form %}
+            </div>
+            <div class="col-lg-2">
+              <br>
+              <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+            </div>
+          </form>
         </div>
-        <div class="col-lg-2">
-          <br>
-          <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
-        </div>
-      </form>
     </div>
-    {% render_table problems_table %}
-    {% if request.user.is_staff %}
-    <div>
-      <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">Add</a>
-    </div>
-    {% endif %}
-    {% bootstrap_pagination page_obj %}
-  </div>
 </section>
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+<!--
+
+<head>
+
+</head>
+<body>
+	<article id="content">
+        <div class="page-title">
+            <ul style="margin: 0px 0px 8px;padding:0px;width:100%" class="tabs">
+                <h2 style="color:#393630; display: inline-block">题目</h2>
+                <span class="spacer"></span>
+            </ul>
+        </div>
+        <div id="content-body">
+            <div id="common-content">
+                <div id="content-right" class="problems">
+                    <div class="info-float">
+                        <div class="sidebox">
+                            <h3>题目搜索 <i class="fa fa-search"></i>
+                            </h3>
+                            <div class="sidebox-content">
+                                <form id="filter-form" name="form" action="" method="get">
+                                    <div>
+                                        <input id="search" type="text" name="search" placeholder="搜索题目…">
+                                    </div>
+                                    <div>
+                                        <input id="show_types" type="checkbox" name="show_types" value="1">
+                                        <label for="show_types">显示题目类型</label>
+                                    </div>
+                                    <div class="filter-form-group">
+                                        <label for="category"><i>分类</i></label>
+                                        <select id="category" name="category" onchange="form.submit()" tabindex="-1" class="select2-hidden-accessible" aria-hidden="true" style="visibility: visible;">
+                                        </select>
+                                        <span class="select2 select2-container select2-container--default" dir="ltr" style="width: 287px;">
+                                            <span class="selection">
+                                                <span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-category-container">
+                                                    <span class="select2-selection__rendered" id="select2-category-container" title="所有">所有</span>
+                                                    <span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span>
+                                                </span>
+                                            </span>
+                                            <span class="dropdown-wrapper" aria-hidden="true"></span>
+                                        </span>
+                                    </div>
+                                    <div class="form-submit-group">
+                                        <a id="go" onclick="form.submit()" class="button">Search</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="content-left" class="problems">
+                    <div style="margin-bottom: 7px; margin-top: 3px;">
+                        <ul class="pagination">
+                        </ul>
+                    </div>
+                    <table id="problem-table" class="table striped">
+                        <thead>
+                            <tr>
+                            <th class="problem"><a href="/problems/?order=name">题目</a>
+                            </th>
+                            <th class="category"><a href="/problems/?order=group">分类</a>
+                            </th>
+                            <th class="points"><a href="/problems/?order=-points">分数</a>
+                            </th>
+                            <th class="ac-rate"><a href="/problems/?order=-ac_rate">AC%</a>
+                            </th>
+                            <th class="users"><a href="/problems/?order=-user_count">用户</a>
+                            </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="problem"><a href="/problem/16bitswonly">16 BIT S/W ONLY</a>
+                            </td>
+                            <td class="category">Uncategorized</td>
+                            <td class="p">3
+                            </td>
+                            <td class="ac-rate">42.4%</td>
+                            <td class="users"><a href="/problem/16bitswonly/rank/">291</a>
+                            </td>
+                            </tr>
+                            <tr>
+                            <td class="problem"><a href="/problem/3drotate">Rotations in 3 Dimensions</a>
+                            </td>
+                            <td class="category">Fun Math</td>
+                            <td class="p">12
+                            </td>
+                            <td class="ac-rate">35.8%</td>
+                            <td class="users"><a href="/problem/3drotate/rank/">29</a>
+                            </td>
+                            </tr>
+                            <tr>
+                            <td class="problem"><a href="/problem/a20">A20 Gate</a>
+                            </td>
+                            <td class="category">Uncategorized</td>
+                            <td class="p">5
+                            </td>
+                            <td class="ac-rate">45.1%</td>
+                            <td class="users"><a href="/problem/a20/rank/">57</a>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div><br>
+        </div>
+	</article>
+</body>
+
+!-->

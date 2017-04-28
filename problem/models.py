@@ -18,6 +18,7 @@ class Problem(models.Model):
     memory_limit = models.IntegerField(default=65536)
     code_length_limit = models.IntegerField(default=65536)
     problem_desc = models.TextField(default='None')
+    tags = models.TextField(default='None')
     is_spj = models.BooleanField(default=False)
     is_checked = models.BooleanField(default=False)
     superadmin = models.ForeignKey(User)
