@@ -73,6 +73,14 @@
         <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
     <script type="text/javascript">
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        });
+        $.post('/api/problems/{{ object.pk }}/upload/', {
+            test:'2'
+        }, function(result){
+            alert(result);
+        });
         $(function() {
             var testEditor = editormd("test-editormd", {
                 width: 1000,
@@ -88,8 +96,8 @@
                 //dialogMaskBgColor : "#000", // 设置透明遮罩层的背景颜色，全局通用，默认为 #fff
                 imageUpload : true,
                 imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                imageUploadURL : "{{ STATIC_URL }}editormd/php/upload.php?test=dfdf",
-
+                imageUploadURL : "/api/problems/{{ object.pk }}/upload/",
+                crossDomainUpload : true,
                 /*
                  上传的后台只需要返回一个 JSON 数据，结构如下：
                  {

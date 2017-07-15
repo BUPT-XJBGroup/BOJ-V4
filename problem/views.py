@@ -17,7 +17,7 @@ from filer.models.filemodels import File
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
 
@@ -35,6 +35,7 @@ logger = logging.getLogger('django')
 class ProblemChangePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
+        print "get permission"
         if not isinstance(obj, Problem):
             return False
         groups = obj.groups.all()
@@ -53,13 +54,21 @@ class FileViewSet(viewsets.ModelViewSet):
 class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
-    permission_classes = (IsAuthenticated, ProblemChangePermission)
+    # permission_classes = (IsAuthenticated, ProblemChangePermission)
+    permission_classes = (IsAuthenticated, )
 
-    @detail_route(methods=['get'], url_path='datas')
+    @detail_route(methods=['get', 'post'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
         problem = self.get_object()
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
+
+    @detail_route(methods=['post','get'], url_path='upload')
+    def add_picture(self, request, pk=None):
+        print request.POST
+        print request.FILES
+        return Response({'code': 0})
+        # return Response({'success': 1, 'message': ''})
 
     @detail_route(methods=['get'], url_path='info')
     def get_problem_title(self, request, pk=None):

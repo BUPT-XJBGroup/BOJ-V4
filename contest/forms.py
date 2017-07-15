@@ -58,7 +58,7 @@ class ContestForm(forms.ModelForm):
         if start_date and start_time and length:
             if datetime.combine(start_date, start_time) + timedelta(minutes=length) < datetime.now():
                 raise forms.ValidationError("Error end time")
-            elif self.instance and self.instance.ended() == -1 and datetime.combine(start_date, start_time) < datetime.now():
+            elif self.instance.pk and self.instance.ended() == -1 and datetime.combine(start_date, start_time) < datetime.now():
                 raise forms.ValidationError("Error start time")
             cleaned_data['start_time'] = datetime.combine(start_date, start_time)
 
