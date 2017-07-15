@@ -73,14 +73,6 @@
         <script src="{{ STATIC_URL }}editormd/editormd.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}editormd/lib/katex.min.js"></script>
     <script type="text/javascript">
-        $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
-        });
-        $.post('/api/problems/{{ object.pk }}/upload/', {
-            test:'2'
-        }, function(result){
-            alert(result);
-        });
         $(function() {
             var testEditor = editormd("test-editormd", {
                 width: 1000,

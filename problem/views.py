@@ -6,20 +6,27 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 import json
+import random
 import mimetypes
+import os
 from django_tables2 import RequestConfig
 from filer.models.filemodels import File
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
+from django.http import JsonResponse
 
 from .models import Problem, ProblemDataInfo, ProblemCase
 from .filters import ProblemFilter
@@ -28,8 +35,15 @@ from .serializers import ProblemSerializer, ProblemDataInfoSerializer
 from .serializers import FileSerializer, ProblemDataSerializer, ProblemCaseSerializer
 from .forms import ProblemForm
 from ojuser.models import GroupProfile
+from bojv4.settings import MEDIA_URL
 import logging
 logger = logging.getLogger('django')
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        pass
 
 
 class ProblemChangePermission(BasePermission):
@@ -54,8 +68,8 @@ class FileViewSet(viewsets.ModelViewSet):
 class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
-    # permission_classes = (IsAuthenticated, ProblemChangePermission)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, ProblemChangePermission)
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     @detail_route(methods=['get', 'post'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
@@ -63,12 +77,17 @@ class ProblemViewSet(viewsets.ModelViewSet):
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
-    @detail_route(methods=['post','get'], url_path='upload')
+    @detail_route(methods=['post'], url_path='upload')
     def add_picture(self, request, pk=None):
         print request.POST
-        print request.FILES
-        return Response({'code': 0})
-        # return Response({'success': 1, 'message': ''})
+        image = request.FILES.get('editormd-image-file', None)
+        if image:
+            print image, type(image)
+            name = str(self.get_object().pk) + "____" + str(random.randint(0, 100000)) + str(image)
+            path = default_storage.save(name, ContentFile(image.read()))
+            print os.path.join(MEDIA_URL, path)
+            return JsonResponse({'success': 1, 'message': '', 'url': os.path.join(MEDIA_URL, path)})
+        return Response({'success': 0, 'message': '', 'url':'path'})
 
     @detail_route(methods=['get'], url_path='info')
     def get_problem_title(self, request, pk=None):
