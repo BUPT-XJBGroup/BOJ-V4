@@ -25,23 +25,11 @@ from .models import Problem, ProblemDataInfo, ProblemCase
 from .filters import ProblemFilter
 from .tables import ProblemTable
 from .serializers import ProblemSerializer, ProblemDataInfoSerializer
-from .serializers import FileSerializer, ProblemDataSerializer
+from .serializers import FileSerializer, ProblemDataSerializer, ProblemCaseSerializer
 from .forms import ProblemForm
 from ojuser.models import GroupProfile
 import logging
 logger = logging.getLogger('django')
-
-
-class ProblemViewPermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, Problem):
-            return False
-        groups = obj.groups.all()
-        for g in groups:
-            if request.user.has_perm('ojuser.view_groupprofile', g):
-                return True
-        return False
 
 
 class ProblemChangePermission(BasePermission):
@@ -59,7 +47,7 @@ class ProblemChangePermission(BasePermission):
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
     serializer_class = FileSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
 
 class ProblemViewSet(viewsets.ModelViewSet):
@@ -69,28 +57,18 @@ class ProblemViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['get'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
-        qs = self.get_queryset()
-        problem = get_object_or_404(qs, pk=pk)
+        problem = self.get_object()
         serializer = ProblemDataSerializer(problem, context={'request': request})
         return Response(serializer.data)
 
     @detail_route(methods=['get'], url_path='info')
     def get_problem_title(self, request, pk=None):
-        qs = self.get_queryset()
-        p = get_object_or_404(qs, pk=pk)
+        p = self.get_object()
         return Response({'code': 0, 'title': p.title})
-
-
-class ProblemDataInfoViewSet(viewsets.ModelViewSet):
-    queryset = ProblemDataInfo.objects.all()
-    serializer_class = ProblemDataInfoSerializer
-    permission_classes = (IsAuthenticated,)
 
     @detail_route(methods=['get'], url_path='check')
     def check_problem_data(self, request, pk=None):
-        problem = get_object_or_404(Problem.objects.all(), pk=pk)
-        if problem.is_checked:
-            return Response({'code': 0, 'msg': 'Have checked before!'}) 
+        problem = self.get_object()
         try:
             if problem.check_data():
                 problem.is_checked = True
@@ -100,7 +78,23 @@ class ProblemDataInfoViewSet(viewsets.ModelViewSet):
         except Exception as ex:
             logger.error(ex)
             return Response({'code': -1, 'msg': 'check data failed'})
-        return Response({'code': 0, 'msg': 'Check Success !'}) 
+        return Response({'code': 0, 'msg': 'Check Success !'})
+
+
+class ScoreViewSet(viewsets.ModelViewSet):
+    queryset = ProblemCase.objects.all()
+    serializer_class = ProblemCaseSerializer
+    permission_classes = (IsAuthenticated, )
+
+    @detail_route(methods=['post'], url_path='updateinfo')
+    def updateinfo(self, request, pk=None, *args, **kwargs):
+        try:
+            res = self.update(request, *args, **kwargs)
+        except Exception as ex:
+            print ex
+            return Response({'code': -1, 'msg': str(ex)})
+        return Response({'code': 0, 'msg': 'xixi'})
+
 
 
 class ProblemListView(ListView):
@@ -155,6 +149,12 @@ class ProblemListView(ListView):
         context['problem_can_change'] = self.problem_can_change_qs
         context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
         return context
+
+
+class ProblemDataInfoViewSet(viewsets.ModelViewSet):
+    queryset = ProblemDataInfo.objects.all()
+    serializer_class = ProblemDataInfoSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class ProblemDataView(DetailView):
@@ -294,7 +294,7 @@ class ProblemUpdateView(UpdateView):
         return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        desc = self.request.POST.get('desc', '')
+        desc = self.request.POST.get('description', '')
         sample_in = self.request.POST.get('sample_in', '')
         sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
@@ -397,7 +397,6 @@ class FileCreateView(CreateView):
         _problem.is_checked = False
         _problem.save()
         self.object = form.save()
-        #  print _problem, self.object
         ProblemDataInfo.objects.create(data=self.object, problem=_problem)
         files = [serialize(self.object)]
         data = {'files': files}

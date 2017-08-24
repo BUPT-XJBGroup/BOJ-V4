@@ -8,7 +8,13 @@ class EnumChoice(object):
             if not isinstance(x, tuple) or len(x) != 2:
                 raise Exception("Args Error")
         self.pairs = args
-        self._pairs = None
+        self._pairs = dict(self.pairs)
+        self._rpairs = dict([(k, v) for k, v in self.pairs])
+
+    def __getattr__(self, item):
+        if self._rpairs.has_key(item):
+            return self._rpairs[item]
+        return None
 
     def choice(self):
         return self.pairs
@@ -46,7 +52,8 @@ LANGUAGE = EnumChoice(
     ('PY2', 'Python 2.7'),
     ('PY3', 'Python 3.5'),
     ('NASM', 'Assembly 32bit'),
-    ('NASM64', 'Assembly 64bit')
+    ('NASM64', 'Assembly 64bit'),
+    ('PAS', 'Pascal')
 )
 
 LANGUAGE_MASK = EnumChoice(
@@ -58,9 +65,14 @@ LANGUAGE_MASK = EnumChoice(
     (32, 'PY2'),
     (64, 'PY3'),
     (128, 'NASM'),
-    (256, 'NASM64')
+    (256, 'NASM64'),
+    (512, 'PAS')
 )
 
+CONTEST_TYPE = EnumChoice(
+    (0, 'ICPC'),
+    (1, 'OI')
+)
 
 GENDER = EnumChoice(
     ('S', _('Secret')),
@@ -89,3 +101,5 @@ PROBLEM_MAX_LEN_DESC = 32768
 PROBLEM_MAX_LEN_CODE = 65536
 PROBLEM_DEFAULT_RUNNING_MEMORY = 65536
 PROBLEM_DEFAULT_RUNNING_TIME = 1000
+CONTEST_CACHE_EXPIRE_TIME = 5 * 60 * 60
+CONTEST_CACHE_FLUSH_TIME = 5

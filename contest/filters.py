@@ -1,7 +1,5 @@
 import django_filters
 from django_filters.widgets import BooleanWidget
-from django_filters import widgets
-from django_filters import filters
 from .models import Contest, ContestSubmission
 from ojuser.models import GroupProfile
 from guardian.shortcuts import get_objects_for_user

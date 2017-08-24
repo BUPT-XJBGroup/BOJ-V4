@@ -16,6 +16,7 @@ from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpRespo
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models.query import EmptyQuerySet
 from rest_framework.permissions import BasePermission
 from django.shortcuts import get_object_or_404
 from guardian.shortcuts import get_objects_for_user
@@ -26,14 +27,6 @@ from ojuser.models import GroupProfile
 import logging
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
-
-
-class SubmissionPermission(BasePermission):
-
-    def has_object_permission(self, request, view, obj):
-        if request.user == obj.user:
-            return True
-        return obj.problem.view_by_user(user=request.user)
 
 
 class CaseResultPermission(BasePermission):
@@ -61,7 +54,7 @@ class SubmissionListView(ListView):
         for g in groups:
             for p in g.problems.all():
                 ans |= p.submissions.all()
-        res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups)).distinct()
+        res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups), Problem.objects.none()).distinct()
         self.submission_can_view_qs = ans.distinct()
         print self.request.GET
         self.filter = SubmissionFilter(
@@ -95,11 +88,13 @@ class SubmissionListView(ListView):
 class SubmissionDetailView(DetailView):
 
     model = Submission
-    permission_classes = (IsAuthenticated, SubmissionPermission)
 
     @method_decorator(login_required)
-    def dispatch(self, request, pid=None, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
         self.user = request.user
+        problem = self.get_object().problem
+        if not problem or not problem.view_by_user(request.user):
+            raise Http404("Submission does not exist")
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

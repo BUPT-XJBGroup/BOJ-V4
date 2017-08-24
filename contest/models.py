@@ -18,35 +18,65 @@ class Contest(models.Model):
     board_stop = models.IntegerField(default=300)
     desc = models.TextField(default='')
     lang_limit = models.IntegerField(default=0)
-    contest_type = models.IntegerField(default=0)
+    contest_type = models.IntegerField(default=0, choices=conf.CONTEST_TYPE.choice())
+
+    def __init__(self, *args, **kwargs):
+        super(Contest, self).__init__(*args, **kwargs)
+        if self.start_time:
+            self._start_time = self.start_time.replace(tzinfo=None)
 
     def __unicode__(self):
         return self.title
 
+    def key(self):
+        return 'contest__' + str(self.pk)
+
+    @property
+    def lang_limited(self):
+        res = []
+        for x in conf.LANGUAGE_MASK.choice():
+            if x[0] & self.lang_limit:
+                res.append(x[0])
+        return res
+
+    @lang_limited.setter
+    def lang_limited(self, value):
+        res = 0
+        for x in value:
+            res |= int(x)
+        self.lang_limit = res
+
+    def get_date_time(self):
+        return self._start_time.date(), self._start_time.time()
+
     def time_left(self):
         now = datetime.now()
-        if now < self.start_time.replace(tzinfo=None):
+        if now < self._start_time:
             return self.length
-        if now > (self.start_time.replace(tzinfo=None) + timedelta(minutes=self.length)):
-            print now
-            print self.start_time
-            print (self.start_time.replace(tzinfo=None)+timedelta(minutes=self.length))
+        if now > self._start_time + timedelta(minutes=self.length):
             return 0
-        print type(self.start_time)
-        return int((self.start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
+        return int((self._start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
+
+    def time_passed_precent(self):
+        now = datetime.now()
+        if now < self._start_time:
+            return 0
+        if now > self._start_time + timedelta(minutes=self.length):
+            return 100
+        return int(((now - self._start_time).total_seconds())*100/(self.length*60))
 
     def ended(self):
         now = datetime.now()
-        if now < self.start_time.replace(tzinfo=None):
+        if now < self._start_time:
             return -1
-        if now > (self.start_time.replace(tzinfo=None) + timedelta(minutes=self.length)):
+        if now > self._start_time + timedelta(minutes=self.length):
             return 1
         return 0
 
     def last_notification(self):
         if self.notifications.count() == 0:
             return None
-        return self.notifications.all().reverse()[0].title
+        return self.notifications.last().title
 
 
 class ContestProblem(models.Model):

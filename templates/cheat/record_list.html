@@ -1,0 +1,54 @@
+
+{% extends "site_base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load django_tables2 %}
+{% block head_title %}{{ contest.title }}{% endblock %}
+{% block body %}
+    <section class="jumbotron">
+<div class="page-header">
+    <Meta http-equiv="Refresh" Content="50;">
+    <button class="btn btn-primary pull-right" onclick="start_cheat();" id="submit">代码查重</button>
+    <a class="btn btn-info pull-right" href="{% url 'contest:contest-detail' contest.pk %}">返回测验</a>
+    <button class="btn btn-danger pull-right" onclick="clear_record();" id="id_clear">清空结果<</button>
+    <h1>{{ contest.title }}
+        <small>{% if contest.ended == 1 %}已结束{% elif contest.ended == 0 %}进行中{% else %}未开始{% endif %}</small>
+    </h1>
+</div>
+    <div class="container" id="wrapper">
+       <form id="filter" action="" method="get" class="form-inline">
+          {% bootstrap_form filter.form %}
+        <div class="form-group">
+          <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+        </div>
+      </form>
+    {% render_table records_table %}
+    {% bootstrap_pagination page_obj %}
+    </div>
+    </section>
+{% endblock %}
+{% block extra_body_base %}
+    <script>
+    function start_cheat() {
+        $.get("/api/contest/{{ contest.pk }}/cheat/", function (result) {
+            if (result.code == 0) {
+                alert("cheat has started");
+            }
+            else{
+                alert(result.msg);
+            }
+        }, "json");
+    }
+    function clear_record() {
+        $.get("/api/contest/{{ contest.pk }}/clear/", function (result) {
+            if (result.code == 0) {
+                alert("cheat record has cleared");
+                location.reload();
+            }
+            else{
+                alert(result.msg);
+            }
+        }, "json");
+    }
+    </script>
+{% endblock %}

@@ -35,7 +35,6 @@ class Submission(models.Model):
         #  return "-".join([str(self.pk), str(self.user), str(self.problem), str(self.datetime)])
 
     def get_absolute_url(self):
-        return self.get_status_display()
         return reverse('submission:submission-detail', kwargs={'pk': self.pk})
 
     def get_status_display(self):
@@ -93,6 +92,7 @@ class Submission(models.Model):
             logger.warning("result of pending judge for submission is False, message is " + resp.get('msg'))
         else:
             logger.warning("result of pending judge for submission is True, " + resp.get('msg'))
+            print "Success"
 
     def rejudge(self):
         for c in self.cases.all():

@@ -1,20 +1,23 @@
 from datetime import datetime, timedelta
 import json
 import math
+from functools import wraps
+
 from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
+from .serializers import ContestSubmissionSerializer
 
 from problem.models import Problem
-from submission.models import Submission
-from bojv4.conf import LANGUAGE_MASK, LANGUAGE
+from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
+from common.nsq_client import send_to_nsq
+from cheat.models import Record
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
-from django.contrib.messages.views import SuccessMessageMixin
+from django.core.cache import cache
 from django.contrib import messages
-from django.shortcuts import render
 from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
@@ -39,45 +42,114 @@ class ContestViewPermission(BasePermission):
             return False
         if request.user.has_perm('ojuser.change_groupprofile', obj.group):
             return True
-        print type(obj.start_time)
         now = datetime.now()
-        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() == 0:
+        if request.user.has_perm('ojuser.view_groupprofile', obj.group) and obj.ended() != -1:
             return True
         return False
 
 
+def view_permission_required(func):
 
-class SubmissionPermission(BasePermission):
+    def decorator(func):
+        @wraps(func)
+        def returned_wrapper(request, *args, **kwargs):
+            pk = kwargs.get('pk')
+            contest = Contest.objects.filter(pk=pk).first()
+            if pk and contest:
+                if request.user.has_perm('ojuser.view_groupprofile', contest.group) and contest.ended() >= 0:
+                    return func(request, *args, **kwargs)
+                elif request.user.has_perm('ojuser.change_groupprofile', contest.group):
+                    return func(request, *args, **kwargs)
+            raise Http404()
+        return returned_wrapper
+    if not func:
+        def foo(func):
+            return decorator(func)
+        return foo
+    return decorator(func)
 
-    def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, ContestSubmission):
-            return False
-        if request.user == obj.user:
-            return True
-        group = obj.problem.contest.group
-        return request.user.has_perm('ojuser.change_groupprofile', group)
+
+def check_permission(user, contest):
+    if not user.has_perm('ojuser.view_groupprofile', contest.group):
+        raise Http404()
 
 
 class ContestViewSet(ModelViewSet):
     queryset = Contest.objects.all()
     permission_classes = (IsAuthenticated, ContestViewPermission)
+    serializer_class = ContestSubmissionSerializer
 
-    def get_queryset(self):
-        return self.queryset
+    @detail_route(methods=['post'], url_path='submit')
+    def submit(self, request, pk=None):
+        if self.get_object().ended() != 0:
+            messages.add_message(
+                self.request._request,
+                messages.ERROR,
+                _('Contest has ended.')
+            )
+            return Response({'code': -1})
+
+        send_to_nsq('submit', json.dumps(request.data))
+        messages.add_message(
+            self.request._request,
+            messages.SUCCESS,
+            _('Submit Success')
+        )
+        return Response({'code': 0})
+
+    @detail_route(methods=['get'], url_path='cheat')
+    def cheat(self, request, pk=None):
+        if self.get_object().ended() != 1:
+            messages.add_message(
+                self.request._request,
+                messages.ERROR,
+                _('Contest has not ended.')
+            )
+            return Response({'code': -1})
+
+        for p in self.get_object().problems.all():
+            send_to_nsq('cheat', str(p.pk))
+        messages.add_message(
+            self.request._request,
+            messages.SUCCESS,
+            _('cheat has started')
+        )
+        return Response({'code': 0})
+
+    @detail_route(methods=['get'], url_path='clear')
+    def clear_record(self, request, pk=None):
+        for p in self.get_object().problems.all():
+            p.cheat.all().delete()
+        messages.add_message(
+            self.request._request,
+            messages.SUCCESS,
+            _('cheat record has been cleaned')
+        )
+        return Response({'code': 0})
 
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
         contest = self.get_object()
+
+        lock = str(contest.pk) + "__lock"
+        if cache.get(lock):
+            res = cache.get(contest.key())
+            return Response(res)
+        cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
+
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
+
+        mp = {}
+        for p in probs:
+            mp[p.index] = float(p.score) / max(1, p.problem.score)
         info = {}
         for csub in subs:
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE']:
+            if sub.status in ['PD'  , 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
-
             uinfo = info.get(uid, None)
             if not uinfo:
                 uinfo = {'username': uid, 'nickname': sub.user.profile.nickname}
@@ -100,15 +172,17 @@ class ContestViewSet(ModelViewSet):
                 # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
             else:
                 info[uid]['pinfo'][idx]["AC"] -= 1
-                info[uid]['pinfo'][idx]["pen"] += 20
-
+                if contest.contest_type == CONTEST_TYPE.ICPC:
+                    info[uid]['pinfo'][idx]["pen"] += 20
+            if contest.contest_type == CONTEST_TYPE.OI:
+                info[uid]['pinfo'][idx]["pen"] = max(info[uid]['pinfo'][idx]["pen"], mp[idx] * sub.score)
         info = info.values()
 
         for i in info:
             for prob in probs:
                 if not i['pinfo'].has_key(prob.index):
-                    i['pinfo'] = {
-                        'idx': prob.idx,
+                    i['pinfo'][prob.index] = {
+                        'idx': prob.index,
                         'AC': 0,
                         'sub': 0,
                         'pen': 0
@@ -121,43 +195,17 @@ class ContestViewSet(ModelViewSet):
             for sinfo in i['pinfo']:
                 if sinfo.get('AC', 0) > 0:
                     i['AC'] += 1
-                    i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
+                    if contest.contest_type == CONTEST_TYPE.ICPC:
+                        i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
+                if contest.contest_type == CONTEST_TYPE.OI:
+                    i['pen'] += sinfo.get('pen')
                 i['sub'] += sinfo.get('sub', 0)
-
+        if contest.contest_type == CONTEST_TYPE.ICPC:
+            info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
+        else:
+            info.sort(key=lambda x: x['pen'], reverse=True)
+        cache.set(contest.key(), info, CONTEST_CACHE_EXPIRE_TIME)
         return Response(info)
-
-    @detail_route(methods=['post'], url_path='submit')
-    def create_submission(self, request, pk=None):
-        index = request.POST.get('index', '')
-        code = request.POST.get('code', '')
-        s = Submission()
-        s.length = len(code)
-        if s.length > Submission.CODE_LENGTH_LIMIT:
-            messages.add_message(
-                request._request,
-                messages.ERROR,
-                _('Code length exceed limit')
-            )
-            return HttpResponseRedirect(reverse('contest:submission-add', args=(pk,)))
-
-        language = request.POST.get('language')
-        p = ContestProblem.objects.filter(contest=self.get_object(), index=index).first()
-        s.code = code
-        s.problem = p.problem
-        s.language = language
-        s.user = request.user
-        s.save()
-        cs = ContestSubmission()
-        cs.submission = s
-        cs.problem = p
-        cs.save()
-        s.judge()
-        messages.add_message(
-            request._request,
-            messages.SUCCESS,
-            _('Submit Success')
-        )
-        return HttpResponseRedirect(reverse('contest:submission-list', args=(pk, )))
 
 
 class ContestListView(ListView):
@@ -198,10 +246,11 @@ class ContestListView(ListView):
         return context
 
 
-class ContestCreateView(SuccessMessageMixin, TemplateView):
+class ContestCreateView(CreateView):
     template_name = 'contest/contest_create_form.html'
     success_message = "your Contest has been created successfully"
-    permission_classes = (IsAuthenticated, )
+    model = Contest
+    form_class = ContestForm
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -209,55 +258,33 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
         try:
             gid = int(gid)
         except Exception as ex:
-            print ex
             gid = -1
         self.group = get_object_or_404(get_objects_for_user(request.user, 'ojuser.change_groupprofile', with_superuser=True), pk=gid)
         return super(ContestCreateView, self).dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        if request.method == 'POST':
-            form = ContestForm(request.POST)
-            print request.POST
-            if form.is_valid():
-                problem_list = request.POST.getlist('problem_id')
-                score_list = request.POST.getlist('problem_score_custom')
-                score_list = map(lambda x: int(x), score_list)
-                problem_list = map(lambda x: int(x), problem_list)
-                c = Contest()
-                c.author = request.user
-                c.start_time = datetime.combine(form.cleaned_data['start_date'], form.cleaned_data['start_time'])
-                c.board_stop = form.cleaned_data['board_stop']
-                c.desc = form.cleaned_data['desc']
-                c.length = form.cleaned_data['length']
-                c.group = self.group
-                c.title = form.cleaned_data['title']
-                for x in form.cleaned_data['lang_limit']:
-                    c.lang_limit |= int(x)
-                c.save()
-                problem_tile_list = request.POST.getlist('problem_title_custom')
-                pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
-                for i in range(len(problem_list)):
-                    p = Problem.objects.filter(pk=problem_list[i]).first()
-                    if ContestProblem.objects.filter(problem=p, contest=c).count() > 0 or not p:
-                        print "Error Problem, ", problem_list[i]
-                        continue
-                    cp = ContestProblem()
-                    cp.problem = p
-                    cp.title = problem_tile_list[i]
-                    cp.score = score_list[i]
-                    cp.contest = c
-                    cp.index = pindex[i]
-                    cp.save()
-                print "____________________end__________________"
-                print reverse('contest:contest-list')
-                return HttpResponseRedirect(reverse('contest:contest-list'))
-        return super(ContestCreateView, self).render_to_response(context)
+    def form_valid(self, form):
+        problem_list = self.request.POST.getlist('problem_id')
+        score_list = self.request.POST.getlist('problem_score_custom')
+        problem_tile_list = self.request.POST.getlist('problem_title_custom')
+        score_list = map(lambda x: int(x), score_list)
+        problem_list = map(lambda x: int(x), problem_list)
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        self.object.lang_limited = form.cleaned_data['lang_limited']
+        self.object.group = self.group
+        self.object.save()
+        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
+        for i in range(len(problem_list)):
+            p = Problem.objects.filter(pk=problem_list[i]).first()
+            if not p or ContestProblem.objects.filter(problem=p, contest=self.object).count() > 0:
+                continue
+            cp = ContestProblem(problem=p, title=problem_tile_list[i],
+                                score=score_list[i], contest=self.object, index=pindex[i])
+            cp.save()
+        return super(ContestCreateView, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(ContestCreateView, self).get_context_data(**kwargs)
-        context['now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        context['form'] = ContestForm()
         groups = get_objects_for_user(self.request.user, 'ojuser.change_groupprofile', with_superuser=True)
         control_problem = None
         for g in groups:
@@ -266,16 +293,18 @@ class ContestCreateView(SuccessMessageMixin, TemplateView):
             else:
                 control_problem |= g.problems.all()
         context['control_problem'] = control_problem.distinct() if control_problem else None
-        print context['now']
         return context
+
+    def get_success_url(self):
+        return reverse("contest:contest-detail", args=[self.object.pk])
 
 
 class ContestDetailView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
 
     @method_decorator(login_required)
-    def dispatch(self, request, pk=None, *args, **kwargs):
+    @method_decorator(view_permission_required)
+    def dispatch(self, request, *args, **kwargs):
         # self.object = get_object_or_404(self.get_queryset(), pk=pk)
         return super(ContestDetailView, self).dispatch(request, *args, **kwargs)
 
@@ -288,12 +317,14 @@ class ContestDetailView(DetailView):
 
 class ProblemDetailView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/problem_detail.html'
 
+    def get_queryset(self):
+        return Contest.objects.all()
+
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', -1)
+    @method_decorator(view_permission_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
         index = kwargs.get('index', '#')
         self.problem = ContestProblem.objects.filter(contest__pk=pk, index=index).first()
         if not self.problem:
@@ -310,7 +341,6 @@ class ProblemDetailView(DetailView):
 
 class SubmissionListView(ListView):
     model = ContestSubmission
-    permission_classes = (IsAuthenticated, )
     template_name = 'contest/submission_list.html'
     paginate_by = 15
 
@@ -334,7 +364,6 @@ class SubmissionListView(ListView):
             request.user,
             'ojuser.view_groupprofile',
             with_superuser=True)), pk=pk)
-        print "contest:========", self.contest.title
         return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -348,83 +377,77 @@ class SubmissionListView(ListView):
         #  add filter here
         context['filter'] = self.filter
         context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
 class BoardView(DetailView):
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/contest_board.html'
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    @method_decorator(view_permission_required)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.contest = self.get_object()
         return super(BoardView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
         context['problems'] = self.object.problems.all()
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
-class ContestUpdateView(TemplateView):
+class ContestUpdateView(UpdateView):
     template_name = 'contest/contest_create_form.html'
     success_message = "your Contest has been updated successfully"
-    permission_classes = (IsAuthenticated, )
+    form_class = ContestForm
+    model = Contest
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        groups = get_objects_for_user(self.request.user, 'ojuser.change_groupprofile', with_superuser=True)
-        qs = Contest.objects.filter(group__in=groups)
-        self.object = get_object_or_404(qs, pk=pk)
+    def dispatch(self, request, pk=None, *args, **kwargs):
+        self.pk = pk
         return super(ContestUpdateView, self).dispatch(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = ContestForm(request.POST)
-            if form.is_valid():
-                problem_list = request.POST.getlist('problem_id')
-                score_list = request.POST.getlist('problem_score_custom')
-                score_list = map(lambda x: int(x), score_list)
-                problem_list = map(lambda x: int(x), problem_list)
-                self.object.author = request.user
-                self.object.start_time = datetime.combine(form.cleaned_data['start_date'], form.cleaned_data['start_time'])
-                self.object.board_stop = form.cleaned_data['board_stop']
-                self.object.desc = form.cleaned_data['desc']
-                self.object.length = form.cleaned_data['length']
-                self.object.group = self.group
-                self.object.title = form.cleaned_data['title']
-                for x in form.cleaned_data['lang_limit']:
-                    self.object.lang_limit |= int(x)
-                self.object.save()
-                problem_tile_list = request.POST.getlist('problem_title_custom')
-                pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
-                problem_pks = []
-                for i in range(len(problem_list)):
-                    p = Problem.objects.filter(pk=problem_list[i]).first()
-                    cp = ContestProblem.objects.filter(contest=self.object, index=pindex).first()
-                    if not cp:
-                        cp = ContestProblem()
-                    cp.problem = p
-                    cp.title = problem_tile_list[i]
-                    cp.score = score_list[i]
-                    cp.contest = self.object
-                    cp.index = pindex[i]
-                    cp.save()
-                    problem_pks.append(cp.pk)
+    def get_success_url(self):
+        return reverse("contest:contest-detail", args=[self.pk])
 
-                for p in self.object.problems.all():
-                    if p.pk not in problem_pks:
-                        p.delete()
-                return HttpResponseRedirect(reverse('contest:contest-list'))
-        context = self.get_context_data(**kwargs)
-        return super(ContestUpdateView, self).render_to_response(context)
+    def form_valid(self, form):
+        problem_list = self.request.POST.getlist('problem_id')
+        score_list = self.request.POST.getlist('problem_score_custom')
+        problem_tile_list = self.request.POST.getlist('problem_title_custom')
+        score_list = map(lambda x: int(x), score_list)
+        problem_list = map(lambda x: int(x), problem_list)
+        self.object = form.save(commit=False)
+        self.object.lang_limited = form.cleaned_data['lang_limited']
+        self.object.save()
+        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
+        problem_pks = []
+        for i in range(len(problem_list)):
+            p = Problem.objects.filter(pk=problem_list[i]).first()
+            cp = ContestProblem.objects.filter(contest=self.object, index=pindex[i]).first()
+            if not cp:
+                cp = ContestProblem()
+            cp.problem = p
+            cp.title = problem_tile_list[i]
+            cp.score = score_list[i]
+            cp.contest = self.object
+            cp.index = pindex[i]
+            cp.save()
+            problem_pks.append(cp.pk)
+
+        for p in self.object.problems.all():
+            if p.pk not in problem_pks:
+                p.delete()
+        self.object.save()
+        return super(ContestUpdateView, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super(ContestUpdateView, self).get_context_data(**kwargs)
         context['now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        context['form'] = ContestForm()
         groups = get_objects_for_user(self.request.user, 'ojuser.change_groupprofile', with_superuser=True)
         control_problem = None
         for g in groups:
@@ -436,45 +459,60 @@ class ContestUpdateView(TemplateView):
         context['problems'] = self.object.problems.all()
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super(ContestUpdateView, self).get_form_kwargs()
+        d, t = self.object.get_date_time()
+        kwargs['initial'] = {
+            'lang_limited': self.object.lang_limited,
+            'start_date': d,
+            'start_time': t,
+        }
+        return kwargs
+
 
 class SubmissionCreateView(DetailView):
-    model = Contest
     template_name = 'contest/submission_create_form.html'
     success_message = "your submission has been created successfully"
-    permission_classes = (IsAuthenticated, ContestViewPermission)
+    model = Contest
+
+    def get_queryset(self):
+        return Contest.objects.all()
 
     @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, pk=None, *args, **kwargs):
         self.index = request.GET.get('index', None)
+        self.contest = self.get_object()
+        check_permission(request.user, self.contest)
+
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(SubmissionCreateView, self).get_context_data(**kwargs)
-        context['index'] = self.index
-        form = SubmissionForm()
-        form.fields['index'].choices = ((x.index, x.index + '. ' + x.title) for x in self.object.problems.all())
+        context['contest'] = self.contest
+        queryset = None
         if self.index:
-            form.fields['index'].initial = self.index
+            queryset = ContestProblem.objects.filter(contest=self.contest, index=self.index).first()
         else:
-            form.fields['index'].initial = 'A'
-        lang_limit = []
-        for x in LANGUAGE_MASK.choice():
-            if self.object.lang_limit & x[0]:
-                lang_limit.append((x[1], LANGUAGE.get_display_name(x[1])))
-        form.fields['language'].choices = lang_limit
+            queryset = self.contest.problems.first()
+        form = SubmissionForm(initial={'problem': queryset})
+        form.set_choice(self.contest)
         context['form'] = form
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         return context
 
 
 class SubmissionDetailView(DetailView):
     model = ContestSubmission
-    permission_classes = (IsAuthenticated, SubmissionPermission)
     template_name = 'contest/submission_detail.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, cpk=None, pk=None, *args, **kwargs):
         self.user = request.user
         self.contest = Contest.objects.filter(pk=cpk).first()
+        if self.user != self.get_object().submission.user \
+            and not request.user.has_perm("ojuser.change_groupprofile", self.contest.group):
+                raise Http404()
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -507,7 +545,6 @@ class SubmissionDetailView(DetailView):
 class NotificationListView(DetailView):
 
     model = Contest
-    permission_classes = (IsAuthenticated, ContestViewPermission)
     template_name = 'contest/notification_list.html'
 
     @method_decorator(login_required)
@@ -529,7 +566,6 @@ class NotificationCreateView(TemplateView):
 
     template_name = 'contest/notification_create_form.html'
     success_message = "your notification has been created successfully"
-    permission_classes = (IsAuthenticated, )
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
@@ -561,7 +597,6 @@ class NotificationUpdateView(TemplateView):
 
     template_name = 'contest/notification_create_form.html'
     success_message = "your notification has been created successfully"
-    permission_classes = (IsAuthenticated, )
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, nid=None, *args, **kwargs):
@@ -593,7 +628,6 @@ class NotificationUpdateView(TemplateView):
 class ClarificationListView(ListView):
 
     model = Contest
-    permission_classes = (IsAuthenticated, )
     template_name = 'contest/clarification_list.html'
 
     paginate_by = 15
@@ -668,7 +702,7 @@ class AnswerView(UpdateView):
             'ojuser.change_groupprofile',
             with_superuser=True)), pk=cpk)
         return super(AnswerView, self).dispatch(request, *args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super(AnswerView, self).get_context_data()
         context['contest'] = self.contest

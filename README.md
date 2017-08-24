@@ -6,7 +6,7 @@ BOJv4
 ### Basic lib
 
 ```
-sudo apt-get install libjpeg-turbo8-dev zlib1g-dev python-pip
+sudo apt-get install libjpeg-turbo8-dev zlib1g-dev python-pip redis
 ```
 ### Virtual environment
 
@@ -14,14 +14,10 @@ Make sure you are using a virtual environment of some sort (e.g. `virtualenv` or
 `pyenv`).
 
 ```
-cat >> prepare.sh << EOF
 pip install virtualenv
 mkdir BOJ
 cd BOJ
 virtualenv --no-site-packages venv
-EOF
-chmod +x prepare.sh
-./prepare.sh
 ```
 
 ### Clone the project
@@ -57,12 +53,18 @@ TemplateView实现多个表单的验证
 ojuser/views.py
 class GroupUpdateView(TemplateView):
 ```
-权限控制最重要的接口
+- 权限控制最重要的接口
 ```
 https://django-guardian.readthedocs.org/en/stable/api/guardian.shortcuts.html
 ```
-向表单里面添加非fields的值
+- 向表单里面添加非fields的值
 ```
 ojuser/forms.py
 class GroupProfileForm(forms.ModelForm):
+```
+
+- 后台进程管理
+    - 包括redis\nsq\django-server\judge\judge-result等
+```
+sudo supervisorctl #查看管理进程
 ```
