@@ -386,6 +386,15 @@ class FileCreateView(CreateView):
     fields = "__all__"
     template_name = 'problem/problemdata_form.html'
 
+    @method_decorator(staff_member_required)
+    def dispatch(self, request, *args, **kwargs):
+        l = len(request.FILES.items())
+        if l > 0:
+            f = request.FILES.items()[0]
+            if f[1].size == 0:
+                f[1].size = 1
+        return super(FileCreateView, self).dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(FileCreateView, self).get_context_data(**kwargs)
         context['pid'] = self.kwargs['pid']
