@@ -46,25 +46,26 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 class SubmissionListView(ListView):
 
     model = Submission
-    paginate_by = 20
+    paginate_by = 15
 
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
+        print "===============all count==============="
+        res = Problem.objects.none()
         ans = self.user.submissions.all()
         for g in groups:
             for p in g.problems.all():
-                ans |= p.submissions.all()
-        res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups), Problem.objects.none()).distinct()
-        self.submission_can_view_qs = ans.distinct()
+                if res.filter(pk=p.pk).count() == 0:
+                    ans |= p.submissions.all()
+            res |= g.problems.all()
+        # res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups), Problem.objects.none()).distinct()
+        self.submission_can_view_qs = ans
         print self.request.GET
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=self.submission_can_view_qs,
             problems=res
         )
-        print "filters=========="
-        # self.filter.filters.get('problem').queryset = res
-        print type(self.filter.qs)
         return self.filter.qs.order_by('-pk')
 
     @method_decorator(login_required)
@@ -75,7 +76,7 @@ class SubmissionListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
         submissions_table = SubmissionTable(self.get_queryset())
-        RequestConfig(self.request).configure(submissions_table)
+        RequestConfig(self.request, paginate={'per_page': self.paginate_by}).configure(submissions_table)
         #  add filter here
         context['submissions_table'] = submissions_table
         #  add filter here
@@ -133,10 +134,6 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
     def dispatch(self, request, pid=None, *args, **kwargs):
         pid = self.kwargs['pid']
         self.problem = Problem.objects.filter(pk=pid).first()
-        if not self.problem:
-            print "no problem"
-        else:
-            print "have p, ", request.user.username
         if not self.problem or not self.problem.view_by_user(request.user):
             raise Http404("Problem does not exist")
         if not self.problem.is_checked:

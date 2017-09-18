@@ -25,5 +25,24 @@
 
 {% block extra_body_base %}
   {% analytics %}
+    <script>
+    var h = window.location.href.split("?");
+    if (h.length > 1) {
+        var href = h[1];
+        if (href.length > 0) {
+            if (href[0] == "p"){
+                if (href[1] == "a") {
+                    var hf = href.split("&");
+                    hf.shift();
+                    href = hf.join("&");
+                }
+            }
+            $("ul.pagination").find("a").each(function () {
+                $(this).attr("href", $(this).attr("href") + "&" + href);
+            });
+        }
+    }
+
+    </script>
   {% block extra_body %}{% endblock %}
 {% endblock %}
