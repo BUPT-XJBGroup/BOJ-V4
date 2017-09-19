@@ -131,7 +131,7 @@ class ProblemListView(ListView):
             queryset=self.problem_can_view_qs,
             user=self.request.user
         )
-        return self.filter.qs
+        return self.filter.qs.order_by('-pk')
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -140,7 +140,7 @@ class ProblemListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ProblemListView, self).get_context_data(**kwargs)
         problems_table = ProblemTable(self.get_queryset())
-        RequestConfig(self.request).configure(problems_table)
+        RequestConfig(self.request, paginate={'per_page': self.paginate_by}).configure(problems_table)
         #  add filter here
         context['problems_table'] = problems_table
         context['filter'] = self.filter

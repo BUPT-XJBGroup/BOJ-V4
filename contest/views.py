@@ -18,6 +18,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
 from django.contrib import messages
+from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
@@ -218,10 +219,9 @@ class ContestListView(ListView):
             self.request.user,
             'ojuser.view_groupprofile',
             with_superuser=True
-        ).distinct()
-        self.contest_can_view_qs = self.request.user.contests.all()
-        for g in group_can_view_qs.all():
-            self.contest_can_view_qs |= g.contests.all()
+        )
+        # self.contest_can_view_qs = self.request.user.contests.all()
+        self.contest_can_view_qs = Contest.objects.filter(Q(group__in=group_can_view_qs)|Q(author=self.request.user))
         self.filter = ContestFilter(
             self.request.GET,
             queryset=self.contest_can_view_qs,
@@ -236,7 +236,7 @@ class ContestListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ContestListView, self).get_context_data(**kwargs)
         contests_table = ContestTable(self.get_queryset())
-        RequestConfig(self.request).configure(contests_table)
+        RequestConfig(self.request, paginate={'per_page': self.paginate_by}).configure(contests_table)
         #  add filter here
         context['contests_table'] = contests_table
         context['filter'] = self.filter
@@ -370,7 +370,7 @@ class SubmissionListView(ListView):
         context = super(SubmissionListView, self).get_context_data(**kwargs)
         submissions_table = SubmissionTable(self.get_queryset())
         # submissions_table.paginate(page=self.request.get('page', 1), per_page=20)
-        RequestConfig(self.request).configure(submissions_table)
+        RequestConfig(self.request, paginate={'per_page': self.paginate_by}).configure(submissions_table)
         #  add filter here
         context['submissions_table'] = submissions_table
         # context['submissions'] = self.filter.qs.order_by('-pk')

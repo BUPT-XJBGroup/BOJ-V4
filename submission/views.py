@@ -50,23 +50,14 @@ class SubmissionListView(ListView):
 
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
-        print "===============all count==============="
-        res = Problem.objects.none()
-        ans = self.user.submissions.all()
-        for g in groups:
-            for p in g.problems.all():
-                if res.filter(pk=p.pk).count() == 0:
-                    ans |= p.submissions.all()
-            res |= g.problems.all()
-        # res = reduce(lambda x, y : x | y, map(lambda x: x.problems.all(), groups), Problem.objects.none()).distinct()
-        self.submission_can_view_qs = ans
-        print self.request.GET
+        res = Problem.objects.filter(groups__in=groups).all()
+        ans = Submission.objects.filter(problem__groups__in=groups).order_by('-pk')
         self.filter = SubmissionFilter(
             self.request.GET,
-            queryset=self.submission_can_view_qs,
+            queryset=ans,
             problems=res
         )
-        return self.filter.qs.order_by('-pk')
+        return self.filter.qs
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -81,8 +72,6 @@ class SubmissionListView(ListView):
         context['submissions_table'] = submissions_table
         #  add filter here
         context['filter'] = self.filter
-        # context['submission_can_view'] = self.submission_can_view_qs
-
         return context
 
 
