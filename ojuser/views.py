@@ -83,7 +83,7 @@ class GroupListView(ListView):
         context['group_can_delete'] = self.group_can_delete_qs
         context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
         tree_list = []
-        for u in self.get_queryset():
+        for u in self.group_can_view_qs:
             p_name = '#'
             if u.parent:
                 p_name = str(u.parent.pk)

@@ -69,11 +69,7 @@ def submission_handler(message):
             if 'compile-message' in mp:
                 sub.set_info('compile-message', mp['compile-message'])
             sub.status = status
-            print "===========info============="
-            print sub.info
             sub.save()
-            print "===========after============="
-            print sub.info
         logger.info("judge end")
     except Exception as ex:
         logger.error("judge error: "+str(ex))
