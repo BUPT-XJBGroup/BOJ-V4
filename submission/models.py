@@ -21,14 +21,13 @@ class Submission(models.Model):
     status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
-    info = models.TextField(blank=True)
+    info = models.TextField(default='')
     code = models.TextField(default='')
     length = models.IntegerField(default=0)
     language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
 
     def __init__(self, *args, **kwargs):
         super(Submission, self).__init__(*args, **kwargs)
-        self._info = None
 
     def __unicode__(self):
         return str(self.pk)
@@ -43,23 +42,23 @@ class Submission(models.Model):
         return conf.STATUS_CODE.get_display_name(self.status)
 
     def set_info(self, key, value):
-        if not self._info:
-            self._info = {}
-            try:
-                self._info = json.loads(self.info)
-            except Exception as ex:
-                self._info = {}
-                print ex
-        self._info[key] = value
+        try:
+            _info = json.loads(self.info)
+        except Exception as ex:
+            _info = {}
+            print ex
+        _info[key] = value
+        self.info = json.dumps(_info)
+        print self.info
 
     def get_info(self, key):
-        if not self._info:
-            self._info = {}
-            try:
-                self._info = json.loads(self.info)
-            except Exception as ex:
-                self._info = {}
-        return self._info.get(key, None)
+        try:
+            _info = json.loads(self.info)
+        except Exception as ex:
+            print "ex============="
+            _info = {}
+            print ex
+        return _info.get(key, None)
 
     def deal_case_result(self, case):
         if case.status == 'AC' and self.cases.count() != self.problem.cases.count():
@@ -109,9 +108,3 @@ class CaseResult(models.Model):
     output = models.CharField(max_length=128, default=0)
 
 
-@receiver(pre_save, sender=Submission)
-def dumps_info_callback(sender, instance, **kwargs):
-    if instance.pk:
-        instance.info = json.dumps({})
-    elif hasattr(instance, '_info'):
-        instance.info = json.dumps(instance._info)

@@ -34,8 +34,16 @@
         </div>
         {% if compile_message %}
             <div class="row gray-bg">
-                <h4>编译信息</h4>
-                <p>{{ compile_message }}</p>
+                <div class="col-lg-12">
+                    <h4>编译信息</h4>
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <p id="compile_message">
+                                {{ compile_message|safe }}
+                            </p>
+                        </div>
+                     </div>
+                </div>
             </div>
         {% endif %}
        <div class="row gray-bg">

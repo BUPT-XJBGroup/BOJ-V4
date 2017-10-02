@@ -48,11 +48,7 @@ class Problem(models.Model):
         if not hasattr(self, '_desc'):
             try:
                 self._desc = json.loads(self.desc)
-                print "problem_dec ============="
-                print self._desc
             except:
-                print "problem desc warong================"
-                print self.desc
                 self._desc = {'desc': self.desc, 'sample_in': '', 'sample_out': ''}
         return self._desc['desc']
 
@@ -106,12 +102,8 @@ class Problem(models.Model):
                 return False
             case.gen_sample_data()
             cases.append(case)
-
         for cas in cases:
             cas.save()
-            print 'pk: ', cas.pk
-            print 'input: ', cas.input_data.path
-            print 'output: ', cas.output_data.path
         return True
 
     def get_problem_data(self):
@@ -190,7 +182,6 @@ class ProblemCase(models.Model):
     @staticmethod
     def get_data_from_file(path, limit=200):
         data = ''
-        i = 0
         with open(path, 'r') as f:
             data = f.read(limit)
         return data

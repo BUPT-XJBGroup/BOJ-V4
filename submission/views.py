@@ -90,10 +90,10 @@ class SubmissionDetailView(DetailView):
     def get_context_data(self, **kwargs):
         logger.warning('============test===============')
         status = self.object.get_status_display()
-
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
-        context['compile_message'] = self.object.get_info('compile-message')
+        ce = self.object.get_info('compile-message')
+        context['compile_message'] = ce
         cases = []
         for c in self.object.cases.all():
             cases.append({

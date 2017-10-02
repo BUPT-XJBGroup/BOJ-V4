@@ -26,8 +26,8 @@ class NsqQueue(object):
     handlers = []
 
     @classmethod
-    def add_callback(cls, handler, topic, channel, address='http://127.0.0.1:4161'):
-        r = nsq.Reader(message_handler=handler, lookupd_http_addresses=[address],
+    def add_callback(cls, handler, topic, channel, address='127.0.0.1:4150'):
+        r = nsq.Reader(message_handler=handler, nsqd_tcp_addresses=[address],
                 topic=topic, channel=channel, lookupd_poll_interval=15)
         cls.handlers.append(r)
 
@@ -46,6 +46,7 @@ def submission_handler(message):
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
         logger.info('receive : ' + str(sub_pk) + status)
+        print mp
         if not sub or not status or status not in conf.STATUS_CODE.keys():
             print conf.STATUS_CODE.keys()
             return True
@@ -68,7 +69,11 @@ def submission_handler(message):
             if 'compile-message' in mp:
                 sub.set_info('compile-message', mp['compile-message'])
             sub.status = status
+            print "===========info============="
+            print sub.info
             sub.save()
+            print "===========after============="
+            print sub.info
         logger.info("judge end")
     except Exception as ex:
         logger.error("judge error: "+str(ex))
