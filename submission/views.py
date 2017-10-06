@@ -12,7 +12,7 @@ from .filters import SubmissionFilter
 from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
-from django.http import JsonResponse, HttpResponseNotAllowed, Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin

@@ -1,0 +1,93 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}My Submission{% endblock %}
+
+{% block body_class %}my-submission{% endblock %}
+
+{% block body_base %}
+<section id="content_body" class="jumbotron">
+    <div class="container" id="wrapper" style="width: 1100px;">
+        <h1>Submisstion Detail</h1>
+        <div class="row gray-bg">
+             <div class="col-lg-10">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td>比赛: </td>
+                        <td><strong>{{ object.problem.contest.title }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Problem: </td>
+                        <td><a href="{% url 'problem:problem-detail' object.problem.pk %}">
+                            {{ object.problem.pk }}. {{ object.problem.title }}
+                        </a></td>
+                    </tr>
+                     <tr>
+                        <td>相似度: </td>
+                        <td>{{ object.probability }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+       <div class="row">
+            <div class="col-lg-6">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>{{ object.user1 }}</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <textarea id="code-text1">{{ code1 }}</textarea>
+                    </div>
+                 </div>
+            </div>
+           <div class="col-lg-6">
+                <div class="ibox">
+                    <div class="ibox-title">
+                        <h5>{{ object.user2 }}</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <textarea id="code-text2">{{ code2 }}</textarea>
+                    </div>
+                 </div>
+            </div>
+       </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_body %}
+
+<link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/codemirror.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/plugins/codemirror/ambiance.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/animate.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}css/style.css" rel="stylesheet">
+
+<script src="{{ STATIC_URL }}js/plugins/metisMenu/jquery.metisMenu.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+<script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
+<!-- CodeMirror -->
+<script src="{{ STATIC_URL }}js/plugins/codemirror/codemirror.js"></script>
+<script src="{{ STATIC_URL }}js/plugins/codemirror/mode/javascript/javascript.js"></script>
+
+<!-- Custom and plugin javascript -->
+<script>
+
+var editor_one = CodeMirror.fromTextArea(document.getElementById("code-text1"), {
+     lineNumbers: true,
+     matchBrackets: true,
+     styleActiveLine: true,
+     readOnly: true
+    });
+var editor_two = CodeMirror.fromTextArea(document.getElementById("code-text2"), {
+     lineNumbers: true,
+     matchBrackets: true,
+     styleActiveLine: true,
+     readOnly: true
+    });
+
+</script>
+
+{% endblock %}
