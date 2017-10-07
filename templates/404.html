@@ -1,0 +1,22 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}Home Page{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block body_base %}
+    <section class="jumbotron">
+        <div class="container">
+            {% include "_messages.html" %}
+            <h1>{% blocktrans %}404 Not Found{% endblocktrans %}</h1>
+            <p>{% blocktrans %}页面不存在， 或者您没有相应的访问权限{% endblocktrans %}</p>
+            {% if not user.is_authenticated %}
+            {% url "account_login" as login_url %}
+            {% url "account_signup" as signup_url %}
+            <p>{% blocktrans %}You can <a href="{{ login_url }}" class="btn btn-default">Log In</a> or <a href="{{ signup_url }}" class="btn btn-primary">Sign Up</a> to try out the site.{% endblocktrans %}</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

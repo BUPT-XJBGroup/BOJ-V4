@@ -20,3 +20,4 @@ urlpatterns = [
     url(r"^", include("account.urls"))
     ,
 ]
+

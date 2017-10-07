@@ -7,9 +7,9 @@ from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.generic import TemplateView, ListView, DetailView, DeleteView
+from django.views.generic import TemplateView, ListView, DetailView, DeleteView, View
 from django.views.generic.edit import FormView
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
@@ -34,6 +34,8 @@ from .filters import GroupFilter
 
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
+import logging
+logger = logging.getLogger('django')
 
 
 class GroupListView(ListView):
@@ -441,4 +443,29 @@ class OjUserProfilesView(FormView):
             )
         return redirect(self.get_success_url())
 
+
+class NotFoundView(TemplateView):
+    template_name = "404.html"
+
+    @classmethod
+    def as_error_view(cls):
+        v = cls.as_view()
+        def view(request):
+            r = v(request)
+            r.render()
+            return r
+        return view
+
+
+class ErrorView(TemplateView):
+    template_name = "500.html"
+
+    @classmethod
+    def as_error_view(cls):
+        v = cls.as_view()
+        def view(request):
+            r = v(request)
+            r.render()
+            return r
+        return view
 

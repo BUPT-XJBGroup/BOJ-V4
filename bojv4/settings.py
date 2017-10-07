@@ -10,10 +10,10 @@ BASE_DIR = PROJECT_ROOT
 #  BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #  DEBUG = False
-DEBUG = True
+DEBUG = False
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -297,4 +297,4 @@ FILER_CANONICAL_URL = 'sharing/'
 
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = ["10.105.243.4", "10.205.242.83"]
+INTERNAL_IPS = ["10.105.243.4", "10.205.242.83", "127.0.0.1"]
