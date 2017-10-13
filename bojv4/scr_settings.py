@@ -1,7 +1,7 @@
 EMAIL_HOST = 'mail.bupt.edu.cn'
 EMAIL_PORT = 25
 
-EMAIL_HOST_USER = 'wangzitian0@bupt.edu.cn'
+EMAIL_HOST_USER = 'abcdefg0@bupt.edu.cn'
 EMAIL_HOST_PASSWORD = 'gg'
 
 #  EMAIL_USE_TLS = False
@@ -19,3 +19,6 @@ DATABASES = {
         "NAME": "dev.db",
     }
 }
+
+
+ALLOWED_HOSTS = ["127.0.0.1"]
