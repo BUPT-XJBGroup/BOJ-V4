@@ -239,7 +239,7 @@ class ProblemCreateView(CreateView):
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        desc = self.request.POST.get('desc', '')
+        desc = self.request.POST.get('description', '')
         sample_in = self.request.POST.get('sample_in', '')
         sample_out = self.request.POST.get('sample_out', '')
         self.object = form.save(commit=False)
