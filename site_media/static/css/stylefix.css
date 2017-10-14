@@ -23,3 +23,13 @@
 .stylefix.problem_style_fix .noinline {
 	display: block;
 }
+
+.stylefix.problem_style_fix .control-label[for="id_groups"] {
+	position: relative;
+	top: -38px;
+	left: 50px;
+}
+
+.stylefix #id_is_spj input {
+	top: -16px;
+}
