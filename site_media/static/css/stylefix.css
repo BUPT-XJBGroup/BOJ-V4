@@ -9,7 +9,7 @@
 	margin-right: 10px;
 }
 
-#filter.stylefix > div {
+#filter.stylefix.content_fix > div {
 	width: 200px;
 	display: inline-block;
 	margin-left: 15px;
