@@ -39,3 +39,7 @@
 .stylefix .select2-search__field {
 	height: 35px !important;
 }
+
+.stylefix .select2.select2-container {
+	width: 250px;
+}
