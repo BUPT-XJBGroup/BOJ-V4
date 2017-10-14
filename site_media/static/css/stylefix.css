@@ -33,3 +33,7 @@
 .stylefix #id_is_spj input {
 	top: -16px;
 }
+
+.stylefix .select2-search__field {
+	height: 35px !important;
+}
