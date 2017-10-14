@@ -34,6 +34,7 @@
 
 .stylefix #id_is_spj {
 	top: -16px;
+	width: 16px;
 }
 
 .stylefix .select2-search__field {
