@@ -4,7 +4,7 @@
 	margin-bottom: 15px;
 }
 
-.stylefix.problem_list_fix input {
+.stylefix.problem_list_fix input, .stylefix.problem_list_fix select {
 	margin-left: 10px;
 	margin-right: 10px;
 }
