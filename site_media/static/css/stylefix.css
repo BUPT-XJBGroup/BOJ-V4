@@ -1,0 +1,16 @@
+/* Style fixs by dimpurr */
+
+.stylefix.problem_list_fix {
+	margin-bottom: 15px;
+}
+
+.stylefix.problem_list_fix input, .stylefix.problem_list_fix select {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#filter.stylefix.content_fix > div {
+	width: 200px;
+	display: inline-block;
+	margin-left: 15px;
+}
