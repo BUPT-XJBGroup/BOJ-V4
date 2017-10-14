@@ -14,3 +14,12 @@
 	display: inline-block;
 	margin-left: 15px;
 }
+
+.stylefix.problem_style_fix .form-group {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.stylefix.problem_style_fix .noinline {
+	display: block;
+}
