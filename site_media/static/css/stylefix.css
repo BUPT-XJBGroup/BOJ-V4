@@ -20,6 +20,10 @@
 	margin-right: 10px;
 }
 
+.stylefix.problem_style_fix .form-group input {
+	width: 150px;
+}
+
 .stylefix.problem_style_fix .noinline {
 	display: block;
 }
