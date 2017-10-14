@@ -21,17 +21,15 @@
 }
 
 .stylefix.problem_style_fix .form-group input {
-	width: 150px;
+	width: 220px;
 }
 
 .stylefix.problem_style_fix .noinline {
 	display: block;
 }
 
-.stylefix.problem_style_fix .control-label[for="id_groups"] {
-	position: relative;
-	top: -38px;
-	left: 50px;
+.stylefix.problem_style_fix .control-label {
+	margin-right: 10px;
 }
 
 .stylefix #id_is_spj input {
