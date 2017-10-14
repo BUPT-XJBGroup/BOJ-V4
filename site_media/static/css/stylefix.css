@@ -3,3 +3,8 @@
 .stylefix.problem_list_fix {
 	margin-bottom: 15px;
 }
+
+.stylefix.problem_list_fix input {
+	margin-left: 10px;
+	margin-right: 10px;
+}
