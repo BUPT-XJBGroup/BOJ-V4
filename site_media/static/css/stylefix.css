@@ -1,0 +1,50 @@
+/* Style fixs by dimpurr */
+
+.stylefix.problem_list_fix {
+	margin-bottom: 15px;
+}
+
+.stylefix.problem_list_fix input, .stylefix.problem_list_fix select {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#filter.stylefix.content_fix > div {
+	width: 200px;
+	display: inline-block;
+	margin-left: 15px;
+}
+
+.stylefix.problem_style_fix .form-group {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.stylefix.problem_style_fix .form-group input {
+	width: 220px;
+}
+
+.stylefix.problem_style_fix .noinline {
+	display: block;
+}
+
+.stylefix.problem_style_fix .control-label {
+	margin-right: 10px;
+}
+
+.stylefix #id_is_spj {
+	top: -16px;
+	width: 16px;
+}
+
+.stylefix .select2-search__field {
+	height: 35px !important;
+}
+
+.stylefix .select2.select2-container {
+	width: 250px !important;
+}
+
+.stylefix .editormd.editormd-vertical {
+	margin: 0;
+}

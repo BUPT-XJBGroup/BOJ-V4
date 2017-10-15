@@ -37,7 +37,6 @@ from guardian.decorators import permission_required_or_403
 import logging
 logger = logging.getLogger('django')
 
-
 class GroupListView(ListView):
 
     model = GroupProfile
@@ -332,9 +331,13 @@ class GroupViewSet(viewsets.ModelViewSet):
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated, ]
 
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
+        rootGroup = GroupProfile.objects.filter(name="root").first()
+        if not request.user.is_staff and rootGroup and request.user not in rootGroup.user_set.all():
+            return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
         mp = {}
         for m in request.data['users']:
             if not m.has_key('password'):
