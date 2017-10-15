@@ -9,7 +9,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import TemplateView, ListView, DetailView, DeleteView, View
 from django.views.generic.edit import FormView
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden, Http404
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
@@ -202,6 +202,30 @@ class GroupDeleteView(DeleteView):
         return super(GroupDeleteView, self).dispatch(request, *args, **kwargs)
 
 
+class UserDeleteView(DeleteView):
+    model = User
+    template_name = 'ojuser/user_confirm_delete.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        group_pk = kwargs.get('group', -1)
+        self.group = GroupProfile.objects.filter(pk=group_pk).first()
+        if not self.group or not request.user.has_perm("change_groupprofile", self.group):
+            raise Http404()
+        user = User.objects.filter(pk=int(kwargs.get('pk', -1))).first()
+        if not user or user == self.group.superadmin:
+            raise Http404()
+        self.user = user
+        return super(UserDeleteView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('mygroup-detail', kwargs={'pk': self.group.pk})
+
+    def delete(self, request, *args, **kwargs):
+        self.group.user_group.user_set.remove(self.user)
+        return HttpResponseRedirect(self.get_success_url())
+
+
 class GroupDetailView(DetailView):
 
     model = GroupProfile
@@ -238,9 +262,10 @@ class GroupDetailView(DetailView):
         context['children'] = group.get_children()
         group_users = group.user_group.user_set.all()
         group_users_table = GroupUserTable(group_users)
-        RequestConfig(self.request).configure(group_users_table)
+        RequestConfig(self.request, paginate={'per_page': 35}).configure(group_users_table)
         #  add filter here
         context['group_users_table'] = group_users_table
+        context['group_can_change'] = self.request.user.has_perm("ojuser.change_groupprofile", self.get_object())
         return context
 
 

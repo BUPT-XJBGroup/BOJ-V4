@@ -27,7 +27,11 @@ class GroupTable(tables.Table):
 
 
 class GroupUserTable(tables.Table):
-    status = tables.TemplateColumn('{{ record.email }}')
+    status = tables.TemplateColumn(
+        template_name='ojuser/group_user_external.html',
+        orderable=False,
+        verbose_name='Operator',
+    )
 
     class Meta:
         model = User

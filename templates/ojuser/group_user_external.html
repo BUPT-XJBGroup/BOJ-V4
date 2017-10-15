@@ -1,0 +1,5 @@
+{% load bootstrap3 %}
+
+{% if group_can_change %}
+<a href="{% url 'group-user-delete' object.pk record.pk %}" title="删除学生">{% bootstrap_icon "remove text-danger" %}</a>
+{% endif %}
