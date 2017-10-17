@@ -213,7 +213,7 @@ class UserDeleteView(DeleteView):
         self.group = GroupProfile.objects.get(pk=kwargs.get('group', -1))
         if not self.group or not user:
             raise PermissionDenied
-        if user == self.group.superadmin or not user.has_perm("ojuser.change_groupprofile", self.group):
+        if user == self.group.superadmin or not request.user.has_perm("ojuser.change_groupprofile", self.group):
             raise PermissionDenied
         self.user = user
         return super(UserDeleteView, self).dispatch(request, *args, **kwargs)
