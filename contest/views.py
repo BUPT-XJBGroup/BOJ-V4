@@ -17,6 +17,7 @@ from cheat.models import Record
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
@@ -61,7 +62,7 @@ def view_permission_required(func):
                     return func(request, *args, **kwargs)
                 elif request.user.has_perm('ojuser.change_groupprofile', contest.group):
                     return func(request, *args, **kwargs)
-            raise Http404()
+            raise PermissionDenied
         return returned_wrapper
     if not func:
         def foo(func):
@@ -72,7 +73,7 @@ def view_permission_required(func):
 
 def check_permission(user, contest):
     if not user.has_perm('ojuser.view_groupprofile', contest.group):
-        raise Http404()
+        raise PermissionDenied
 
 
 class ContestViewSet(ModelViewSet):
@@ -510,9 +511,11 @@ class SubmissionDetailView(DetailView):
     def dispatch(self, request, cpk=None, pk=None, *args, **kwargs):
         self.user = request.user
         self.contest = Contest.objects.filter(pk=cpk).first()
+        if not self.contest:
+            raise Http404()
         if self.user != self.get_object().submission.user \
             and not request.user.has_perm("ojuser.change_groupprofile", self.contest.group):
-                raise Http404()
+            raise PermissionDenied
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -570,8 +573,10 @@ class NotificationCreateView(TemplateView):
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
         self.contest = Contest.objects.filter(pk=pk).first()
-        if not self.contest or not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+        if not self.contest:
             raise Http404()
+        if not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            raise PermissionDenied
         return super(NotificationCreateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -602,8 +607,10 @@ class NotificationUpdateView(TemplateView):
     def dispatch(self, request, pk=None, nid=None, *args, **kwargs):
         self.contest = Contest.objects.filter(pk=pk).first()
         self.notification = Notification.objects.filter(pk=nid).first()
-        if not self.contest or not self.notification or not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+        if not self.contest or not self.notification:
             raise Http404()
+        if not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            raise PermissionDenied
         return super(NotificationUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

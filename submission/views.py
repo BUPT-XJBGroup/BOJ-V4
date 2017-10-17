@@ -14,6 +14,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from django.http import Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models.query import EmptyQuerySet
@@ -84,7 +85,7 @@ class SubmissionDetailView(DetailView):
         self.user = request.user
         problem = self.get_object().problem
         if not problem or not problem.view_by_user(request.user):
-            raise Http404("Submission does not exist")
+            raise PermissionDenied
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -124,7 +125,7 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         pid = self.kwargs['pid']
         self.problem = Problem.objects.filter(pk=pid).first()
         if not self.problem or not self.problem.view_by_user(request.user):
-            raise Http404("Problem does not exist")
+            raise PermissionDenied
         if not self.problem.is_checked:
             return HttpResponseForbidden()
         self.user = request.user

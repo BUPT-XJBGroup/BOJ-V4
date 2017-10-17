@@ -9,7 +9,8 @@ from django.contrib.auth.models import User, Group
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.generic import TemplateView, ListView, DetailView, DeleteView, View
 from django.views.generic.edit import FormView
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponseForbidden, Http404
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponseNotFound
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
@@ -82,7 +83,10 @@ class GroupListView(ListView):
         context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
-        context['rootGroup'] = GroupProfile.objects.filter(name='root').first()
+        rootGroup = GroupProfile.objects.filter(name='root').first()
+        if rootGroup and self.request.user.has_perm('ojuser.change_groupprofile', rootGroup):
+            context['root_user'] = True
+            context['rootGroup'] = rootGroup
         tree_list = []
         for u in self.group_can_view_qs:
             p_name = '#'
@@ -98,8 +102,6 @@ class GroupListView(ListView):
                 },
             })
         context['tree_list'] = json.dumps(tree_list)
-        print context['tree_list']
-
         return context
 
 
@@ -149,7 +151,7 @@ class GroupUpdateView(TemplateView):
     template_name = 'ojuser/group_update_form.html'
 
     @method_decorator(permission_required_or_403(
-        'change_groupprofile',
+        'ojuser.change_groupprofile',
         (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
@@ -207,13 +209,12 @@ class UserDeleteView(DeleteView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        group_pk = kwargs.get('group', -1)
-        self.group = GroupProfile.objects.filter(pk=group_pk).first()
-        if not self.group or not request.user.has_perm("change_groupprofile", self.group):
-            raise Http404()
         user = User.objects.filter(pk=int(kwargs.get('pk', -1))).first()
-        if not user or user == self.group.superadmin:
-            raise Http404()
+        self.group = GroupProfile.objects.get(pk=kwargs.get('group', -1))
+        if not self.group or not user:
+            raise PermissionDenied
+        if user == self.group.superadmin or not user.has_perm("ojuser.change_groupprofile", self.group):
+            raise PermissionDenied
         self.user = user
         return super(UserDeleteView, self).dispatch(request, *args, **kwargs)
 
@@ -265,6 +266,9 @@ class GroupDetailView(DetailView):
         #  add filter here
         context['group_users_table'] = group_users_table
         context['group_can_change'] = self.request.user.has_perm("ojuser.change_groupprofile", self.get_object())
+        rootGroup = GroupProfile.objects.filter(name='root').first()
+        if rootGroup and self.request.user.has_perm('ojuser.change_groupprofile', rootGroup):
+            context['root_user'] = True
         return context
 
 
@@ -272,7 +276,7 @@ class GroupMemberView(TemplateView):
     template_name = 'ojuser/group_members.html'
 
     @method_decorator(permission_required_or_403(
-        'change_groupprofile',
+        'ojuser.change_groupprofile',
         (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
@@ -295,13 +299,13 @@ class GroupResetView(DetailView):
         context['users'] = group_users
         return context
 
+
 class UserAddView(TemplateView):
     template_name = 'ojuser/user_add.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(UserAddView, self).dispatch(request, *args, **kwargs)
-
 
     def get_context_data(self, **kwargs):
         profiles_can_change = get_objects_for_user(
@@ -313,8 +317,6 @@ class UserAddView(TemplateView):
         context['group_can_change'] = profiles_can_change.all()
         if self.request.GET.has_key('group_pk'):
             context['select_group'] = int(self.request.GET['group_pk'])
-            # print "================select_group"
-            # print context['select_group']
         return context
 
 
@@ -336,8 +338,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
         rootGroup = GroupProfile.objects.filter(name="root").first()
-        if not request.user.is_staff and rootGroup and request.user not in rootGroup.user_set.all():
-            return Response(serializer.errors, status=status.HTTP_403_FORBIDDEN)
+        if not rootGroup or request.user.has_perm("ojuser.change_groupprofile", rootGroup):
+            return Response("Error", status=status.HTTP_403_FORBIDDEN)
         mp = {}
         for m in request.data['users']:
             if not m.has_key('password'):
@@ -471,29 +473,4 @@ class OjUserProfilesView(FormView):
             )
         return redirect(self.get_success_url())
 
-
-class NotFoundView(TemplateView):
-    template_name = "404.html"
-
-    @classmethod
-    def as_error_view(cls):
-        v = cls.as_view()
-        def view(request):
-            r = v(request)
-            r.render()
-            return r
-        return view
-
-
-class ErrorView(TemplateView):
-    template_name = "500.html"
-
-    @classmethod
-    def as_error_view(cls):
-        v = cls.as_view()
-        def view(request):
-            r = v(request)
-            r.render()
-            return r
-        return view
 

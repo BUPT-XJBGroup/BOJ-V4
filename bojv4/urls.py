@@ -1,4 +1,4 @@
-from django.conf.urls import include, url, patterns, handler404, handler500
+from django.conf.urls import include, url, patterns
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -9,7 +9,7 @@ from problem.views import ProblemViewSet, ProblemDataInfoViewSet, ScoreViewSet
 from problem.views import FileViewSet
 from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
-from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet, NotFoundView, ErrorView
+from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 
 
 router = routers.DefaultRouter()
@@ -47,5 +47,3 @@ if settings.DEBUG:
     )
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-handler500 = ErrorView.as_error_view()
-handler404 = NotFoundView.as_error_view()
