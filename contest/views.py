@@ -1,3 +1,4 @@
+#encoding: utf-8
 from datetime import datetime, timedelta
 import json
 import math
@@ -522,7 +523,7 @@ class SubmissionDetailView(DetailView):
         submission = self.object.submission
         status = submission.get_status_display()
         if submission.status == 'JD':
-            status = 'Judging in ' + str(self.object.cases.count()) + 'th case'
+            status = u'正在运行第' + str(self.object.cases.count()) + u'组数据'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         context['contest'] = self.contest

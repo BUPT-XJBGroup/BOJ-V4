@@ -1,3 +1,4 @@
+#encoding: utf-8
 import django_filters
 from django_filters.widgets import BooleanWidget
 from .models import Contest, ContestSubmission
@@ -11,9 +12,9 @@ from bojv4.conf import LANGUAGE, STATUS_CODE
 class SubmissionFilter(django_filters.FilterSet):
 
     pk = django_filters.CharFilter(name='id', label='id')
-    submission__language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label='language')
-    problem = django_filters.ModelChoiceFilter(queryset=(('A', 'A'),))
-    submission__status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='status')
+    submission__language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label=u'语言')
+    problem = django_filters.ModelChoiceFilter(queryset=(('A', 'A'),), label=u'题目')
+    submission__status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='状态')
 
     def __init__(self, *args, **kwargs):
         self.problems = kwargs.pop('problems')
@@ -38,9 +39,9 @@ def view_groups(request):
 
 
 class ContestFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='name')
-    group = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all())
-    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label='can_manage', widget=BooleanWidget())
+    name = django_filters.CharFilter(lookup_expr='icontains', label=u'考试名称')
+    group = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all(), label=u'所属用户组')
+    can_manage = django_filters.BooleanFilter(method='filter_can_manage', label=u'是否可以管理', widget=BooleanWidget())
 
     def filter_can_manage(self, queryset, name, value):
         groups = get_objects_for_user(

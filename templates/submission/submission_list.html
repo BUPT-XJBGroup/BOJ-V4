@@ -12,11 +12,11 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>Submissions</h1>
+    <h2>提交列表</h2>
       <form id="filter" action="" method="get" class="form-inline stylefix problem_list_fix">
           {% bootstrap_form filter.form %}
         <div class="form-group">
-          <input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+          <input value="搜索" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
         </div>
       </form>
     {% render_table submissions_table %}

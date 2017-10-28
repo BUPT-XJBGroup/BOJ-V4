@@ -2,30 +2,30 @@
 
 {% load i18n %}
 
-{% block head_title %}My Submission{% endblock %}
+{% block head_title %}提交代码详情{% endblock %}
 
 {% block body_class %}my-submission{% endblock %}
 
 {% block body_base %}
 <section id="content_body" class="jumbotron">
     <div class="container" id="wrapper" style="width: 1100px;">
-        <h1>Submisstion Detail</h1>
+        <h2>提交详情</h2>
         <div class="row gray-bg">
              <div class="col-lg-10">
                 <table class="table">
                     <tbody>
                     <tr>
-                        <td>Problem: </td>
+                        <td>题目: </td>
                         <td><a href="{% url 'problem:problem-detail' object.problem.pk %}">
                             {{ object.problem.pk }}. {{ object.problem.title }}
                         </a></td>
                     </tr>
                      <tr>
-                        <td>Status: </td>
+                        <td>运行结果: </td>
                         <td>{{ object.get_status_display }}</td>
                         </tr>
                     <tr>
-                        <td>User: </td>
+                        <td>提交用户: </td>
                         <td><strong>{{ object.user.username }}</strong></td>
                     </tr>
                     </tbody>
@@ -60,11 +60,11 @@
                     <div class="ibox float-e-margins">
                         <div class="ibox-title">
                             <span class="label label-primary pull-right">{{ case.status }}</span>
-                            <h5>{{ case.position }}th case: </h5>
+                            <h5>第{{ case.position }}组数据: </h5>
                         </div>
                         <div class="ibox-content">
-                            <h5>run_time: {{ case.time }} ms</h5>
-                            <h5>run_limit: {{ case.memory }}KB</h5>
+                            <h5>运行时间: {{ case.time }} ms</h5>
+                            <h5>运行内存: {{ case.memory }}KB</h5>
                         </div>
                     </div>
                </div>

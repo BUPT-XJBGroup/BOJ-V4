@@ -15,48 +15,48 @@
   <div class="container">
     {% include "_messages.html" %}
       {% get_obj_perms request.user for object as "object_perms" %}
-    <h1>Groups {{ object.name }} - {{ object.nickname }}</h1>
-    <h4>Admins</h4>
+    <h1>{{ object.name }} - {{ object.nickname }}</h1>
+    <h4>管理员</h4>
     <ul>
       {% for admin in admins %}
       <li>{{ admin.username }}</li>
       {% empty %}
-      <li>No admin yet.</li>
+      <li>没有管理员</li>
       {% endfor %}
     </ul>
-    <h4>Parents</h4>
+    <h4>上级组</h4>
 	<ul>
       {% for profile in object.get_ancestors %}
-		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a>
+		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.nickname }}</a>
 	  {% empty %}
-	  <li> No Parents </li>
+	  <li>没有上级</li>
       {% endfor %}
 	</ul>
-    <h4>Children</h4>
+    <h4>没有下级</h4>
     <ul>
       {% for profile in children %}
-      <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.name }}</a></li>
+      <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.nickname }}</a></li>
       {% empty %}
       <li>No child yet.</li>
       {% endfor %}
     </ul>
       {% if "change_groupprofile" in object_perms %}
-        <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">Create Contest</a>
+        <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">创建用户组</a>
         {% endif %}
 	<div id="jstree_id">
 	</div>
   </div>
-  <h3>group member</h3>
+  <h3>成员用户</h3>
 
   {% render_table group_users_table %}
 
 
   {% if "change_groupprofile" in object_perms %}
     <div>
-        <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">Members</a>
-        <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">Reset</a>
+        <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">添加组员</a>
+        <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">重置密码</a>
         {% if "delete_groupprofile" in object_perms %}
-            <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">Update</a>
+            <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">更改组信息</a>
         {% endif %}
     </div>
   {% endif %}

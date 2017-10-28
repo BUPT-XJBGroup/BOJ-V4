@@ -26,7 +26,7 @@
     {% render_table problems_table %}
     {% if request.user in rootGroup.user_group.user_set or request.user.is_staff %}
     <div>
-      <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">Add</a>
+      <a href="{% url 'problem:problem-add' %}" class="btn btn-large btn-primary">添加题目</a>
     </div>
     {% endif %}
     {% bootstrap_pagination page_obj %}

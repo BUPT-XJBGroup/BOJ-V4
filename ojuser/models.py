@@ -9,6 +9,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile')
     nickname = models.CharField(max_length=30)
+    is_teacher = models.BooleanField(default=False)
     gender = models.CharField(
         max_length=1,
         choices=conf.GENDER.choice(),

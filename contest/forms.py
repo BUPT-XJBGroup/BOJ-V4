@@ -67,9 +67,10 @@ class ContestForm(forms.ModelForm):
 
 class SubmissionForm(forms.ModelForm):
 
-    problem = forms.ModelChoiceField(queryset=ContestProblem.objects.all(), widget=forms.Select(), label='problem')
-    language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select(), label='language')
-    code = forms.CharField(label='code', widget=forms.Textarea, max_length=65536)
+    problem = forms.ModelChoiceField(queryset=ContestProblem.objects.all(), widget=forms.Select(),
+            label=u'提交题目')
+    language = forms.ChoiceField(choices=LANGUAGE.choice(), widget=forms.Select(), label=u'程序语言')
+    code = forms.CharField(label=u'代码', widget=forms.Textarea, max_length=65535)
 
     class Meta:
         model = ContestSubmission
@@ -82,6 +83,7 @@ class SubmissionForm(forms.ModelForm):
                 lang_limit.append((x[1], LANGUAGE.get_display_name(x[1])))
         self.fields['language'].choices = lang_limit
         self.fields['problem'].queryset = contest.problems.all()
+
 
 
 class NotificationForm(forms.ModelForm):
