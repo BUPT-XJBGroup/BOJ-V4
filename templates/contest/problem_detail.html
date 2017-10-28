@@ -31,26 +31,26 @@
           </tbody>
         </table>
       <div class="row">
-          <h4>prolem description</h4>
+          <h4>题目描述</h4>
           <div id="test-editormd-view"><textarea>{{ problem.problem.description }}</textarea></div>
       </div>
       <br>
         {% if problem.problem.sample_in %}
         <div class="row">
-          <h4>Sample input</h4>
+          <h4>输入样例</h4>
           <pre><code>{{ problem.problem.sample_in }}</code></pre>
         </div>
     {% endif %}
     {% if problem.problem.sample_out %}
         <div class="row">
-           <h4>Sample output</h4>
+           <h4>输出样例</h4>
            <pre><code>{{ problem.problem.sample_out }}</code></pre>
         </div>
     {% endif %}
     <div class="row">
-        <a href="{% url 'contest:submission-add' object.pk%}?index={{ problem.index }}" class="btn btn-primary">Submit</a>
+        <a href="{% url 'contest:submission-add' object.pk%}?index={{ problem.index }}" class="btn btn-primary">提交题目</a>
     {% if is_admin %}
-           <a href="{% url 'problem:problem-update' problem.problem.pk%}" class="btn btn-info pull-right">Update Problem</a>
+           <a href="{% url 'problem:problem-update' problem.problem.pk%}" class="btn btn-info pull-right">修改题目</a>
     {% endif %}
     </div>
     </div>
