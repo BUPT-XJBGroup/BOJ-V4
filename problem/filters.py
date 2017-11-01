@@ -1,3 +1,4 @@
+#encoding: utf-8
 import django_filters
 from django_filters.widgets import BooleanWidget, CSVWidget
 from .models import Problem, ProblemTag
@@ -9,9 +10,9 @@ from django_select2.forms import ModelSelect2Widget
 
 
 class ProblemFilter(django_filters.FilterSet):
-    title = django_filters.CharFilter(lookup_expr='icontains')
-    tags = django_filters.ModelChoiceFilter(queryset=ProblemTag.objects.all())
-    groups = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all())
+    title = django_filters.CharFilter(lookup_expr='icontains', label=u"题目名称")
+    tags = django_filters.ModelChoiceFilter(queryset=ProblemTag.objects.all(), label=u"标签")
+    groups = django_filters.ModelChoiceFilter(queryset=GroupProfile.objects.all(), label=u"用户组")
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

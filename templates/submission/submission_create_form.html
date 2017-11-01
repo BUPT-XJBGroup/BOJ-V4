@@ -10,11 +10,11 @@
 {% block body_base %}
 <section class="jumbotron">
   <div class="container">
-	<h1>{{ problem.title }}</h1>
-    <h3>create submission</h3>
+	  <h2>{{ problem.pk }}. {{ problem.title }}</h2>
+    <h3>提交代码</h3>
     <form action="" method="post">{% csrf_token %}
       {% bootstrap_form form %}
-      <input type="submit" value="Save" />
+      <input type="submit" value="提交" />
     </form>
   </div>
 </section>

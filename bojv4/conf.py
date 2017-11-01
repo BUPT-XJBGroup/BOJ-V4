@@ -1,3 +1,4 @@
+#encoding: utf-8
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -81,19 +82,19 @@ GENDER = EnumChoice(
 )
 
 STATUS_CODE = EnumChoice(
-    ('PD', 'Pending'),
-    ('SE', 'System Error'),
-    ('CL', 'Compiling'),
-    ('CE', 'Compilation Error'),
-    ('JD', 'Judging'),
-    ('AC', 'Accepted'),
-    ('PE', 'Presentation Error'),
+    ('PD', u'提交中'),
+    ('SE', u'系统错误'),
+    ('CL', u'编译中'),
+    ('CE', u'编译错误'),
+    ('JD', u'程序运行中'),
+    ('AC', u'通过'),
+    ('PE', u'格式错误'),
     ('IR', 'Invalid Return'),
-    ('WA', 'Wrong Answer'),
-    ('RE', 'Runtime Error'),
-    ('TLE', 'Time Limit Exceed'),
-    ('MLE', 'Memory Limit Exceed'),
-    ('OLE', 'Output Limit Exceed'),
+    ('WA', u'答案错误'),
+    ('RE', u'运行时错误'),
+    ('TLE', u'运行超时'),
+    ('MLE', u'内存使用超过限制'),
+    ('OLE', u'输出长度超过限制'),
     ('IE', 'Internal Error'),
 )
 PROBLEM_TITLE_LENGTH = 64

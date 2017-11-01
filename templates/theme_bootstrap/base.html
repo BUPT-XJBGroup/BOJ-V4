@@ -2,7 +2,7 @@
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="utf-8" />
-    <title>{% block head_title_base %}{{ request.get_host }} | {% block head_title %}{% endblock %}{% endblock %}</title>
+    <title>{% block head_title_base %} BOJ-V4| {% block head_title %}{% endblock %}{% endblock %}</title>
     {% block viewport %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% endblock %}
@@ -40,12 +40,12 @@
             <div class="collapse navbar-collapse navbar-responsive-collapse">
               {% block nav %}
               <ul class="nav navbar-nav">
-                <li><a href="{%url 'problem:problem-list' %}">Problem</a></li>
-                <li><a href="{%url 'submission:submission-list' %}">Submission</a></li>
-                  <li><a href="{%url 'contest:contest-list' %}">Contest</a></li>
-                  <li><a href="{%url 'mygroup-list' %}">Group</a></li>
+                <li><a href="{%url 'problem:problem-list' %}">题目</a></li>
+                <li><a href="{%url 'submission:submission-list' %}">提交</a></li>
+                  <li><a href="{%url 'contest:contest-list' %}">考试</a></li>
+                  <li><a href="{%url 'mygroup-list' %}">用户组</a></li>
                   {% if root_user %}
-                  <li><a href="{% url 'user-add' %}" target="_blank">New Users</a></li>
+                  <li><a href="{% url 'user-add' %}" target="_blank">添加用户</a></li>
                   {% endif %}
               </ul>
               {% endblock %}

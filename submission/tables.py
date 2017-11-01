@@ -6,8 +6,10 @@ from django_tables2.utils import A
 
 class SubmissionTable(tables.Table):
     pk = tables.LinkColumn('submission:submission-detail', args=[A('pk')], verbose_name='id')
-    problem = tables.LinkColumn('problem:problem-detail', args=[A('problem.pk')])
+    problem = tables.LinkColumn('problem:problem-detail', args=[A('problem.pk')],
+            verbose_name=u'题目')
     status = tables.Column(verbose_name=u'运行结果')
+    running_time = tables.Column(verbose_name=u'运行时间')
 
     class Meta:
         model = Submission

@@ -12,7 +12,7 @@
 <section class="jumbotron">
   <div class="container">
     {% include "_messages.html" %}
-    <h1>My Groups</h1>
+    <h2>用户组列表</h2>
     <div class="container" style="position: relative; top: 30px;">
 		<div class="row" style="min-height: 240px;">
 			<div class="col-md-6">
@@ -23,7 +23,7 @@
 					</div>
 					<div class="col-md-4">
 					  <br>
-					  <input value="Go!" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+					  <input value="跳转" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
 					</div>
 					</div>
 				</form>
@@ -41,7 +41,7 @@
 					</div>
 					<div class="col-lg-2">
 					<br>
-					<input value="Filter" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
+					<input value="搜索" type="submit" id="group-search-submit" class="btn btn-large btn-primary"/>
 					</div>
 				</form>
 			</div>
@@ -50,7 +50,7 @@
     <div style="position: relative; top: -80px">{% render_table groups_table %}</div>
     {% if request.user in rootGroup.user_set or request.user.is_staff %}
     <div>
-      <a href="{% url 'mygroup-create' %}" class="btn btn-large btn-primary">New </a>
+      <a href="{% url 'mygroup-create' %}" class="btn btn-large btn-primary">创建新用户组</a>
     </div>
     {% endif %}
   </div>

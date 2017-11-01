@@ -1,3 +1,4 @@
+#encoding: utf-8
 from django import forms
 from django_select2.forms import ModelSelect2MultipleWidget
 #  from django.contrib.auth.models import Group
@@ -17,7 +18,8 @@ class ProblemForm(forms.ModelForm):
 
     class Meta:
         model = Problem
-        exclude = ["superadmin", "is_checked", "created_time", "last_updated_time", "desc"]
+        exclude = ["superadmin", "is_checked", "created_time", "last_updated_time", "desc",
+                "code_length_limit"]
         widgets = {
             'groups': ModelSelect2MultipleWidget(
                 search_fields=[
@@ -32,4 +34,10 @@ class ProblemForm(forms.ModelForm):
             )
         }
 
+    def __init__(self, *args, **kwargs):
+        super(ProblemForm, self).__init__(*args, **kwargs)
+        self.fields['title'].label = u"题目"
+        self.fields['time_limit'].label = u"运行时间限制"
+        self.fields['memory_limit'].label = u"运行时间限制"
+        self.fields['groups'].label = u"所属用户组"
 
