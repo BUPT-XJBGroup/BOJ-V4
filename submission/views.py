@@ -52,7 +52,8 @@ class SubmissionListView(ListView):
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
         res = Problem.objects.filter(groups__in=groups).all()
-        ans = Submission.objects.filter(problem__groups__in=groups).order_by('-pk')
+        ans = Submission.objects.filter(problem__groups__in=groups)\
+                .filter(contest_submissions__isnull=True).order_by('-pk')
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=ans,
@@ -85,6 +86,8 @@ class SubmissionDetailView(DetailView):
         self.user = request.user
         problem = self.get_object().problem
         if not problem or not problem.view_by_user(request.user):
+            raise PermissionDenied
+        if self.get_object().contest_submissions.count() > 0:
             raise PermissionDenied
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 

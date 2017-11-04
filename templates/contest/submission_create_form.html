@@ -8,7 +8,7 @@
      <form action="/api/contest/{{ contest.pk }}/submit/" method="post" class="form" role="form">{% csrf_token %}
                 {{ form|bootstrap }}
       </form>
-      <button onclick="submit()" class="btn btn-primary">Submit</button>
+      <button onclick="submit()" class="btn btn-primary">提交</button>
 </div>
 {% endblock %}
 

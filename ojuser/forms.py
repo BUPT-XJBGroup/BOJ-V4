@@ -59,7 +59,6 @@ class GroupForm(forms.ModelForm):
     admins = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
         widget=ModelSelect2MultipleWidget(
-            queryset=User.objects.all(),
             search_fields=[
                 'username__icontains',
             ]
@@ -69,8 +68,6 @@ class GroupForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(GroupForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
-            print "instance user_set============="
-            print self.instance.user_set.all()
             self.fields['admins'].initial = self.instance.user_set.all()
 
     def save(self, commit=True):
@@ -102,8 +99,6 @@ class GroupProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        print '=============kwargs========'
-        print kwargs
         super(GroupProfileForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
             my_children = self.instance.get_descendants(include_self=True)

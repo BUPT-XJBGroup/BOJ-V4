@@ -15,6 +15,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
+from django.db.models.query import EmptyQuerySet
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -84,7 +85,7 @@ class GroupListView(ListView):
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
         rootGroup = GroupProfile.objects.filter(name='root').first()
-        if rootGroup and self.request.user.has_perm('ojuser.change_groupprofile', rootGroup):
+        if rootGroup and self.request.user.is_staff:
             context['root_user'] = True
             context['rootGroup'] = rootGroup
         tree_list = []
@@ -126,22 +127,22 @@ class GroupCreateView(TemplateView):
         context = super(GroupCreateView, self).get_context_data(**kwargs)
         self.group_profile_form = GroupProfileForm(self.request.POST or None)
         self.group_admins_form = GroupForm(self.request.POST or None)
-        group = GroupProfile.objects.filter(name='root').first()
+        # group = GroupProfile.objects.filter(name='root').first()
         groups = get_objects_for_user(
             user=self.request.user,
-            perms='ojuser.delete_groupprofile',
+            perms='ojuser.change_groupprofile',
             with_superuser=True)
-        queryset = User.objects.filter(pk=self.request.user.pk)
-        superadmin_queryset = copy.copy(queryset)
-        if group:
-            superadmin_queryset |= group.user_group.user_set.all()
-        self.group_profile_form.fields['superadmin'].queryset = superadmin_queryset.distinct()
-
-        for g in groups.all():
-            queryset |= g.user_group.user_set.all()
-
-        self.group_admins_form.fields["admins"].queryset = queryset.distinct()
-
+        admin_groups = Group.objects.filter(admin_profile__in=groups).all()
+        user_groups = Group.objects.filter(user_profile__in=groups).all()
+        all_user = User.objects.filter(pk=self.request.user.pk).all()
+        for g in user_groups:
+            all_user |= g.user_set.all()
+        all_admin = User.objects.filter(pk=self.request.user.pk).all()
+        for g in admin_groups:
+            all_admin |= g.user_set.all()
+        self.group_profile_form.fields['superadmin'].queryset = all_admin.distinct()
+        self.group_profile_form.fields["parent"].queryset = groups
+        self.group_admins_form.fields["admins"].queryset = all_user.distinct()
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
         return context
@@ -151,7 +152,7 @@ class GroupUpdateView(TemplateView):
     template_name = 'ojuser/group_update_form.html'
 
     @method_decorator(permission_required_or_403(
-        'ojuser.change_groupprofile',
+        'ojuser.delete_groupprofile',
         (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
@@ -338,7 +339,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
         rootGroup = GroupProfile.objects.filter(name="root").first()
-        if not rootGroup or request.user.has_perm("ojuser.change_groupprofile", rootGroup):
+        if not rootGroup or request.user.is_staff:
             return Response("Error", status=status.HTTP_403_FORBIDDEN)
         mp = {}
         for m in request.data['users']:

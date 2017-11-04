@@ -45,13 +45,10 @@ def submission_handler(message):
         sub_pk = mp.get('submission-id', None)
         sub = Submission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
-        logger.info('receive : ' + str(sub_pk) + status)
-        print mp
         if not sub or not status or status not in conf.STATUS_CODE.keys():
-            print conf.STATUS_CODE.keys()
+            logger.error("error status : %s", status)
             return True
         position = mp.get('position', '')
-        logger.info('receive : ' + str(sub_pk) + str(position))
         if position != '':
             # CaseResult.deal_case_result(mp)
             case = CaseResult()
@@ -78,7 +75,6 @@ def submission_handler(message):
 
 
 def submit_handler(message):
-    print 'submit=================',  message.body
     try:
         mp = json.loads(message.body)
         s = ContestSubmission()

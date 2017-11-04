@@ -27,7 +27,7 @@
     <h4>上级组</h4>
 	<ul>
       {% for profile in object.get_ancestors %}
-		<a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.nickname }}</a>
+	  <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.nickname }}</a></li>
 	  {% empty %}
 	  <li>没有上级</li>
       {% endfor %}
@@ -41,7 +41,7 @@
       {% endfor %}
     </ul>
       {% if "change_groupprofile" in object_perms %}
-        <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">创建用户组</a>
+        <a href="{% url 'contest:add-contest' object.pk %}" class="btn btn-large btn-primary">创建考试</a>
         {% endif %}
 	<div id="jstree_id">
 	</div>

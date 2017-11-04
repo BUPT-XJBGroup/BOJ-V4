@@ -6,6 +6,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -234,8 +235,10 @@ class ProblemCreateView(CreateView):
     form_class = ProblemForm
     template_name_suffix = '_create_form'
 
-    @method_decorator(staff_member_required)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_teacher:
+            raise PermissionDenied
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):

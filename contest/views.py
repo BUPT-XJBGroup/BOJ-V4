@@ -88,7 +88,7 @@ class ContestViewSet(ModelViewSet):
             messages.add_message(
                 self.request._request,
                 messages.ERROR,
-                _('Contest has ended.')
+                _(u'考试已结束')
             )
             return Response({'code': -1})
 
@@ -96,7 +96,7 @@ class ContestViewSet(ModelViewSet):
         messages.add_message(
             self.request._request,
             messages.SUCCESS,
-            _('Submit Success')
+            _(u'提交成功')
         )
         return Response({'code': 0})
 
@@ -357,7 +357,7 @@ class SubmissionListView(ListView):
             queryset=queryset,
             problems=self.contest.problems.all()
         )
-        return self.filter.qs
+        return self.filter.qs.order_by('-pk')
 
 
     @method_decorator(login_required)
