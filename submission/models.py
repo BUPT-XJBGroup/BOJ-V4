@@ -61,7 +61,7 @@ class Submission(models.Model):
         return _info.get(key, None)
 
     def deal_case_result(self, case):
-        if case.status == 'AC' and self.cases.count() != self.problem.cases.count():
+        if case.status == 'AC' and case.position < self.problem.cases.count() - 1:
             return
         self.status = case.status
         for c in self.cases.all():
@@ -76,7 +76,7 @@ class Submission(models.Model):
             'problem_id': self.problem.id,
             'source': self.code,
             'language': self.language,
-            'time_limit': self.problem.time_limit,
+            'time_limit': self.problem.time_limit / 1000.0,
             'memory_limit': self.problem.memory_limit,
             'problem_data': self.problem.get_problem_data()
         }

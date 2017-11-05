@@ -30,20 +30,20 @@
       <!-- The fileinput-button span is used to style the file input field as button -->
       <span class="btn btn-success fileinput-button">
         <i class="glyphicon glyphicon-plus"></i>
-        <span>Add files...</span>
+        <span>添加文件.</span>
         <input type="file" name="file" multiple>
       </span>
       <button type="submit" class="btn btn-primary start">
         <i class="glyphicon glyphicon-upload"></i>
-        <span>Start upload</span>
+        <span>开始上传</span>
       </button>
       <button type="reset" class="btn btn-warning cancel">
         <i class="glyphicon glyphicon-ban-circle"></i>
-        <span>Cancel upload</span>
+        <span>取消上传</span>
       </button>
       <button type="button" class="btn btn-danger delete">
         <i class="glyphicon glyphicon-trash"></i>
-        <span>Delete</span>
+        <span>删除文件</span>
       </button>
      <input type="checkbox" class="toggle">
       <!-- The loading indicator is shown during file processing -->
@@ -61,6 +61,7 @@
   </div>
   <!-- The table listing the files available for upload/download -->
   <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+
 </form>
 <!-- The blueimp Gallery widget -->
 <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
@@ -74,6 +75,13 @@
 </div>
 <div>
     <button class="btn btn-large btn-primary" onclick="check_data()">Finished</button>
+<p><h3>上传数据规则</h3>
+每一组数据的输入文件的后缀名必须为.in, 输出文件的后缀名必须为.out, 前缀必须相同。<br/>
+在添加文件的弹出框里可以一次选择多个文件， 然后点击开始上传。 系统会根据文件名自动识别输入数据与输出数据。<br/>
+如： test1.in, test1.out, test2.in, test2.out<br/>
+这四个文件组成了两组数据， 第一组数据的输入文件为test1.in， 输出文件为test1.out，<br/>
+第二组数据的输入文件为test2.in， 输出文件为test2.out
+<p>
 </div>
 {% endblock %}
 {% block extra_body %}

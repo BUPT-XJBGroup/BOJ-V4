@@ -27,7 +27,7 @@ class RecordListView(ListView):
             queryset=queryset,
         )
         self.filter.filters.get('problem').queryset = self.contest.problems.all()
-        return self.filter.qs
+        return self.filter.qs.order_by('-probability')
 
     @method_decorator(login_required)
     @method_decorator(change_permission_required)

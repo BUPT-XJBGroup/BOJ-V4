@@ -59,7 +59,7 @@ class SubmissionTable(tables.Table):
     running_memory = tables.Column(accessor='submission.running_memory', verbose_name=u"内存使用")
     language = tables.Column(accessor='submission.language', verbose_name=u"程序语言")
     user = tables.Column(accessor='submission.user', verbose_name=u"提交用户")
-    create_time = tables.DateColumn(accessor='submission.create_time', verbose_name=u"创建时间")
+    create_time = tables.DateTimeColumn(accessor='submission.create_time', verbose_name=u"创建时间")
 
     class Meta:
         model = ContestSubmission

@@ -237,7 +237,7 @@ class ProblemCreateView(CreateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_teacher:
+        if not request.user.is_staff:
             raise PermissionDenied
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 

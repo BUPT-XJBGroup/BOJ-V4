@@ -338,9 +338,9 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
-        rootGroup = GroupProfile.objects.filter(name="root").first()
-        if not rootGroup or request.user.is_staff:
-            return Response("Error", status=status.HTTP_403_FORBIDDEN)
+        # rootGroup = GroupProfile.objects.filter(name="root").first()
+        if not request.user.is_staff:
+            raise PermissionDenied
         mp = {}
         for m in request.data['users']:
             if not m.has_key('password'):
@@ -353,13 +353,14 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             users = serializer.save()
             for r in serializer.data:
                 r['password'] = mp[r['username']]
-            if request.data.has_key('group_pk'):
+            group_pk = request.data.get('group_pk', None)
+            if group_pk and len(group_pk) > 0:
                 try:
-                    group = GroupProfile.objects.get(pk=int(request.data['group_pk']))
+                    group = GroupProfile.objects.get(pk=int(group_pk))
                     group.user_group.user_set.add(*users)
                     group.save()
                 except Exception, ex:
-                    print ex
+                    logger.error("add user error: \n" + str(ex)) 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

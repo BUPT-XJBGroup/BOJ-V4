@@ -54,7 +54,7 @@ def submission_handler(message):
             case = CaseResult()
             case.position = int(position)
             case.submission = sub
-            case.running_time = mp.get('time', 0)
+            case.running_time = mp.get('time', 0) * 1000
             case.running_memory = mp.get('memory', 0)
             case.status = status
             case.save()

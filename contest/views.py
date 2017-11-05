@@ -16,6 +16,8 @@ from common.nsq_client import send_to_nsq
 from cheat.models import Record
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
@@ -24,7 +26,6 @@ from django.db.models import Q
 from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
 from guardian.shortcuts import get_objects_for_user
@@ -35,6 +36,8 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework.request import Request
+import logging
+logger = logging.getLogger('django')
 # Create your views here.
 
 
@@ -59,7 +62,8 @@ def view_permission_required(func):
             pk = kwargs.get('pk')
             contest = Contest.objects.filter(pk=pk).first()
             if pk and contest:
-                if request.user.has_perm('ojuser.view_groupprofile', contest.group) and contest.ended() >= 0:
+                if request.user.has_perm('ojuser.view_groupprofile', contest.group)\
+                        and contest.ended() == 0:
                     return func(request, *args, **kwargs)
                 elif request.user.has_perm('ojuser.change_groupprofile', contest.group):
                     return func(request, *args, **kwargs)
@@ -139,7 +143,6 @@ class ContestViewSet(ModelViewSet):
             res = cache.get(contest.key())
             return Response(res)
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
-
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
 
@@ -153,30 +156,27 @@ class ContestViewSet(ModelViewSet):
             idx = csub.problem.index
             if sub.status in ['PD'  , 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
-            uinfo = info.get(uid, None)
-            if not uinfo:
-                uinfo = {'username': uid, 'nickname': sub.user.profile.nickname}
-                info[uid] = uinfo
-            pinfo = uinfo.get('pinfo', None)
-            if not pinfo:
-                pinfo = {}
-                uinfo['pinfo'] = pinfo
-            sinfo = pinfo.get(idx, None)
-            if not sinfo:
-                sinfo = {'idx': idx, 'AC': 0, 'sub': 0, 'pen': 0}
-                pinfo[idx] = sinfo
-            if sinfo.get('AC', 0):
+            if uid not in info:
+                info[uid] = {'username': uid, 'nickname': sub.user.profile.nickname}
+            uinfo = info[uid] 
+            if 'pinfo' not in uinfo:
+                uinfo['pinfo'] = {}
+            pinfo = uinfo['pinfo']
+            if idx not in pinfo:
+                pinfo[idx] = {'idx': idx, 'AC': 0, 'sub': 0, 'pen': 0}
+            sinfo = pinfo[idx]
+            if sinfo.get('AC', 0) > 0:
                 continue
-            td = sub.create_time - contest.start_time
-            info[uid]['pinfo'][idx]['sub'] += 1
+            sinfo['sub'] += 1
             if sub.status == "AC":
-                info[uid]['pinfo'][idx]["AC"] = info[uid]['pinfo'][idx]['sub']
-                info[uid]['pinfo'][idx]["ac_time"] = int(math.ceil(td.total_seconds() / 60))
+                sinfo["AC"] = sinfo['sub']
+                td = sub.create_time - contest.start_time
+                sinfo["ac_time"] = int(math.ceil(td.total_seconds() / 60))
                 # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
             else:
-                info[uid]['pinfo'][idx]["AC"] -= 1
-                if contest.contest_type == CONTEST_TYPE.ICPC:
-                    info[uid]['pinfo'][idx]["pen"] += 20
+                sinfo["AC"] -= 1
+                if contest.contest_type == 0:
+                    sinfo["pen"] += 20
             if contest.contest_type == CONTEST_TYPE.OI:
                 info[uid]['pinfo'][idx]["pen"] = max(info[uid]['pinfo'][idx]["pen"], mp[idx] * sub.score)
         info = info.values()
@@ -198,13 +198,13 @@ class ContestViewSet(ModelViewSet):
             for sinfo in i['pinfo']:
                 if sinfo.get('AC', 0) > 0:
                     i['AC'] += 1
-                    if contest.contest_type == CONTEST_TYPE.ICPC:
+                    if contest.contest_type == 0:
                         i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
                 if contest.contest_type == CONTEST_TYPE.OI:
                     i['pen'] += sinfo.get('pen')
                 i['sub'] += sinfo.get('sub', 0)
-        if contest.contest_type == CONTEST_TYPE.ICPC:
-            info.sort(key=lambda x: x['AC']*1000000-x['pen'], reverse=True)
+        if contest.contest_type == 0:
+            info.sort(key=lambda x: x['AC']*1000000, reverse=True)
         else:
             info.sort(key=lambda x: x['pen'], reverse=True)
         cache.set(contest.key(), info, CONTEST_CACHE_EXPIRE_TIME)
@@ -348,14 +348,18 @@ class SubmissionListView(ListView):
 
     def get_queryset(self):
         queryset = None
+        users = User.objects.filter(pk=self.request.user.pk).all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             queryset = ContestSubmission.objects.filter(problem__contest=self.contest).all()
+            users |= self.contest.group.admin_group.user_set.all()
+            users |= self.contest.group.user_group.user_set.all()
         else:
             queryset = ContestSubmission.objects.filter(problem__contest=self.contest, submission__user=self.request.user).all()
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=queryset,
-            problems=self.contest.problems.all()
+            problems=self.contest.problems.all(),
+            users=users.distinct()
         )
         return self.filter.qs.order_by('-pk')
 
@@ -396,7 +400,6 @@ class BoardView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
-        # context['submissions'] = reduce(lambda x, y: (x.submissions.all() | y.submissions.all()), self.object.problems.all())
         context['problems'] = self.object.problems.all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             context['is_admin'] = True
@@ -523,7 +526,7 @@ class SubmissionDetailView(DetailView):
         submission = self.object.submission
         status = submission.get_status_display()
         if submission.status == 'JD':
-            status = u'正在运行第' + str(self.object.cases.count()) + u'组数据'
+            status = u'正在运行第' + str(self.object.submission.cases.count()) + u'组数据'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         context['contest'] = self.contest
