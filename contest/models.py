@@ -117,3 +117,59 @@ class Clarification(models.Model):
     contest = models.ForeignKey(Contest, related_name='clarifications')
 
 
+class ProblemRecord(object):
+
+    def __init__(self, _idx):
+        self.AC = 0
+        self.sub = 0
+        self.pen = 0
+        self.ac_time = 0
+        self.idx = _idx
+
+    def to_json(self):
+        return {
+            'AC': self.AC,
+            'sub': self.sub,
+            'pen': self.pen,
+            'ac_time': self.ac_time,
+            'idx': self.idx
+        }
+
+
+class BoradRecord(object):
+
+    def __init__(self, username, nickname):
+        self.problems = {}
+        self.username = username
+        self.nickname = nickname
+        self.AC = 0
+        self.sub = 0
+        self.pen = 0
+
+    def add_problem(self, idx, problem):
+        self.problems[idx] = problem
+
+    def calc(self, probs, contest_type):
+        for prob in probs:
+            if not self.problems.has_key(prob.index):
+                self.problems[prob.index] = ProblemRecord(prob.index)
+        self.problems = self.problems.values()
+        self.problems.sort(key=lambda x: x.idx)
+        for sinfo in self.problems:
+            if sinfo.AC > 0:
+                self.AC += 1
+                if contest_type == 0:
+                    self.pen += sinfo.pen + sinfo.ac_time
+            if contest_type == 1:
+                self.pen += sinfo.pen
+            self.sub += sinfo.sub
+
+    def to_json(self):
+        return {
+            'sub': self.sub,
+            'AC': self.AC,
+            'pen': self.pen,
+            'username': self.username,
+            'nickname': self.nickname,
+            'problems': [x.to_json() for x in self.problems]
+        }

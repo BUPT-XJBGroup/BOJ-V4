@@ -4,7 +4,8 @@ import json
 import math
 from functools import wraps
 
-from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification
+from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification\
+    , ProblemRecord, BoradRecord
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
@@ -154,61 +155,40 @@ class ContestViewSet(ModelViewSet):
             sub = csub.submission
             uid = sub.user.username
             idx = csub.problem.index
-            if sub.status in ['PD'  , 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
+            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
             if uid not in info:
-                info[uid] = {'username': uid, 'nickname': sub.user.profile.nickname}
+                # info[uid] = {'username': uid, 'nickname': sub.user.profile.nickname}
+                info[uid] = BoradRecord(username=uid, nickname=sub.user.profile.nickname)
             uinfo = info[uid] 
-            if 'pinfo' not in uinfo:
-                uinfo['pinfo'] = {}
-            pinfo = uinfo['pinfo']
+            pinfo = uinfo.problems
             if idx not in pinfo:
-                pinfo[idx] = {'idx': idx, 'AC': 0, 'sub': 0, 'pen': 0}
+                pinfo[idx] = ProblemRecord(idx)
             sinfo = pinfo[idx]
-            if sinfo.get('AC', 0) > 0:
+            if sinfo.AC > 0:
                 continue
-            sinfo['sub'] += 1
+            sinfo.sub += 1
             if sub.status == "AC":
-                sinfo["AC"] = sinfo['sub']
+                sinfo.AC = sinfo.sub
                 td = sub.create_time - contest.start_time
-                sinfo["ac_time"] = int(math.ceil(td.total_seconds() / 60))
+                sinfo.ac_time = int(math.ceil(td.total_seconds() / 60))
                 # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
             else:
-                sinfo["AC"] -= 1
+                sinfo.AC -= 1
                 if contest.contest_type == 0:
-                    sinfo["pen"] += 20
+                    sinfo.pen += 20
             if contest.contest_type == CONTEST_TYPE.OI:
-                info[uid]['pinfo'][idx]["pen"] = max(info[uid]['pinfo'][idx]["pen"], mp[idx] * sub.score)
+                sinfo.pen = max(sinfo.pen, mp[idx] * sub.score)
         info = info.values()
-
-        for i in info:
-            for prob in probs:
-                if not i['pinfo'].has_key(prob.index):
-                    i['pinfo'][prob.index] = {
-                        'idx': prob.index,
-                        'AC': 0,
-                        'sub': 0,
-                        'pen': 0
-                    }
-            i['pinfo'] = i['pinfo'].values()
-            i['pinfo'].sort(key=lambda x: x['idx'])
-            i['sub'] = 0
-            i['AC'] = 0
-            i['pen'] = 0
-            for sinfo in i['pinfo']:
-                if sinfo.get('AC', 0) > 0:
-                    i['AC'] += 1
-                    if contest.contest_type == 0:
-                        i['pen'] += sinfo.get('pen', 0) + sinfo.get('ac_time', 0)
-                if contest.contest_type == CONTEST_TYPE.OI:
-                    i['pen'] += sinfo.get('pen')
-                i['sub'] += sinfo.get('sub', 0)
+        for v in info:
+            v.calc(probs, contest.contest_type)
         if contest.contest_type == 0:
-            info.sort(key=lambda x: x['AC']*1000000, reverse=True)
+            info.sort(key=lambda x: x.AC*1000000 - x.pen, reverse=True)
         else:
-            info.sort(key=lambda x: x['pen'], reverse=True)
-        cache.set(contest.key(), info, CONTEST_CACHE_EXPIRE_TIME)
-        return Response(info)
+            info.sort(key=lambda x: x.pen, reverse=True)
+        ans = [x.to_json() for x in info]
+        cache.set(contest.key(), ans, CONTEST_CACHE_EXPIRE_TIME)
+        return Response(ans)
 
 
 class ContestListView(ListView):
