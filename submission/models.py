@@ -80,6 +80,11 @@ class Submission(models.Model):
             'memory_limit': self.problem.memory_limit,
             'problem_data': self.problem.get_problem_data()
         }
+        
+        # Temporary special time limit mercy (?) for java
+        if self.language == 'JAVA8':
+            req['time_limit'] *= 2
+
         self.score = 0
         self.status = 'PD'
         self.save()
