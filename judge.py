@@ -15,6 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
 from submission.models import Submission, CaseResult
+from django.core.files.base import ContentFile
 from contest.models import ContestSubmission, ContestProblem
 from django.contrib.auth.models import User
 import logging
@@ -80,14 +81,13 @@ def submit_handler(message):
         s = ContestSubmission()
         s.problem = ContestProblem.objects.get(pk=int(mp['problem']))
         sub = Submission()
-        sub.code = mp['code']
         sub.language = mp['language']
         sub.problem = s.problem.problem
         sub.user = User.objects.get(pk=int(mp['user']))
         sub.save()
         s.submission = sub
         s.save()
-        sub.judge()
+        sub.judge(mp['code'])
     except Exception as ex:
         print ex
     return True
