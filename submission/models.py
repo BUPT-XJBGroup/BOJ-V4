@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from problem.models import Problem
 from django.core.urlresolvers import reverse
+from django.core.files.base import ContentFile
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from bojv4 import conf
@@ -22,9 +23,10 @@ class Submission(models.Model):
     running_time = models.IntegerField(default=0)
     running_memory = models.IntegerField(default=0)
     info = models.TextField(default='')
-    code = models.TextField(default='')
+    # code = models.TextField(default='')
     length = models.IntegerField(default=0)
     language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
+    code_file = models.FileField(null=True, upload_to='code/')
 
     def __init__(self, *args, **kwargs):
         super(Submission, self).__init__(*args, **kwargs)
@@ -69,12 +71,16 @@ class Submission(models.Model):
             self.running_memory = max(self.running_memory, c.running_memory)
         self.save()
 
-    def judge(self):
+    @property
+    def code(self):
+        return self.code_file.file
+
+    def judge(self, code):
         req = {
             'grader': 'custom',
             'submission_id': self.id,
             'problem_id': self.problem.id,
-            'source': self.code,
+            'source': code,
             'language': self.language,
             'time_limit': self.problem.time_limit / 1000.0,
             'memory_limit': self.problem.memory_limit,
@@ -83,6 +89,7 @@ class Submission(models.Model):
         self.score = 0
         self.status = 'PD'
         self.save()
+        self.code_file.save(str(self.pk), ContentFile(code))
         logger.warning("start pending judge for submission")
         resp = send_to_nsq('judge', json.dumps(req))
         if resp.get('code', None) == -1:
@@ -98,6 +105,9 @@ class Submission(models.Model):
             c.delete()
         self.judge()
 
+    def get_code(self):
+        return self.code_file.file.read()
+
 
 class CaseResult(models.Model):
     submission = models.ForeignKey(Submission, related_name='cases')
@@ -108,3 +118,6 @@ class CaseResult(models.Model):
     output = models.CharField(max_length=128, default=0)
 
 
+class TestCase(models.Model):
+
+    code_file = models.FileField(null=True, upload_to='code/')

@@ -53,7 +53,7 @@ class SubmissionListView(ListView):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
         res = Problem.objects.filter(groups__in=groups).all()
         ans = Submission.objects.filter(problem__groups__in=groups)\
-                .filter(contest_submissions__isnull=True).order_by('-pk')
+                .filter(contest_submission__isnull=True).order_by('-pk')
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=ans,
@@ -87,8 +87,11 @@ class SubmissionDetailView(DetailView):
         problem = self.get_object().problem
         if not problem or not problem.view_by_user(request.user):
             raise PermissionDenied
-        if self.get_object().contest_submissions.count() > 0:
+        try:
+            csub = self.get_object().contest_submission
             raise PermissionDenied
+        except:
+            pass
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -150,6 +153,9 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         self.object.user = self.request.user
         print self.object.code
         try:
+            self.object.save()
+            self.object.code_file.write(str(self.object.pk), form.cleaned_data['code'])
+            self.object.code_file.save()
             self.object.save()
             self.object.judge()
         except Exception as ex:
