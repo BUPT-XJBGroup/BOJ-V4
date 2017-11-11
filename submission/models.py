@@ -73,7 +73,7 @@ class Submission(models.Model):
 
     @property
     def code(self):
-        return self.code_file.file
+        return self.code_file.file.read()
 
     def judge(self, code):
         req = {
@@ -93,25 +93,21 @@ class Submission(models.Model):
 
         self.score = 0
         self.status = 'PD'
-        self.save()
+        # self.save()
         self.code_file.save(str(self.pk), ContentFile(code))
         logger.warning("start pending judge for submission")
         resp = send_to_nsq('judge', json.dumps(req))
         if resp.get('code', None) == -1:
             self.status = 'SE'
-            self.save()
             logger.warning("result of pending judge for submission is False, message is " + resp.get('msg'))
         else:
             logger.warning("result of pending judge for submission is True, " + resp.get('msg'))
-            print "Success"
+        self.save()
 
     def rejudge(self):
         for c in self.cases.all():
             c.delete()
         self.judge()
-
-    def get_code(self):
-        return self.code_file.file.read()
 
 
 class CaseResult(models.Model):

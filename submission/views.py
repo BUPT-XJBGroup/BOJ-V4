@@ -151,15 +151,9 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
-        print self.object.code
-        try:
-            self.object.save()
-            self.object.code_file.write(str(self.object.pk), form.cleaned_data['code'])
-            self.object.code_file.save()
-            self.object.save()
-            self.object.judge()
-        except Exception as ex:
-            logger.warning(ex)
+        self.object.save()
+        # self.object.code_file.write(str(self.object.pk), i
+        self.object.judge(form.cleaned_data['code'])
         return super(SubmissionCreateView, self).form_valid(form)
 
     def get_success_url(self):

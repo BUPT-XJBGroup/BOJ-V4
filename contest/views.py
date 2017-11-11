@@ -144,9 +144,9 @@ class ContestViewSet(ModelViewSet):
             res = cache.get(contest.key())
             return Response(res)
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
+        # cache.set(lock, 1, 1)
         subs = ContestSubmission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
-
         mp = {}
         for p in probs:
             mp[p.index] = float(p.score) / max(1, p.problem.score)
