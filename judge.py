@@ -38,46 +38,42 @@ class NsqQueue(object):
         nsq.run()
 
 def submission_handler(message):
-    logger.info('receive judge result')
-    try:
-        connection.close()
-        mp = json.loads(message.body)
-        # print json.dumps(mp, indent=4)
-        sub_pk = mp.get('submission-id', None)
-        is_contest = mp.get('contest', True)
-        if is_contest:
-            sub = ContestSubmission.objects.filter(pk=sub_pk).first()
-        else:
-            sub = NormalSubmission.objects.filter(pk=sub_pk).first()
-        status = mp.get('status', None)
-        if not sub or not status or status not in conf.STATUS_CODE.keys():
-            logger.error("error status : %s", status)
-            return True
-        position = mp.get('position', '')
-        if position != '':
-            # CaseResult.deal_case_result(mp)
-            # cases = sub.get_info('cases')
-            case = {}
-            case['position'] = int(position)
-            case['submission'] = sub
-            case['time'] = mp.get('time', 0) * 1000
-            case['memory'] = mp.get('memory', 0)
-            case['status'] = status
-            sub.add_case(case)
-            if status == 'AC':
-                # sub.score += sub.problem.get_score(position)
-                sub.add_score(position)
-                sub.save()
-            sub.deal_case_result(case)
-        else:
-            if 'compile-message' in mp:
-                sub.set_info('compile-message', mp['compile-message'])
-            sub.status = status
+    connection.close()
+    logger.error("message.body: %s", message.body)
+    mp = json.loads(message.body)
+    # print json.dumps(mp, indent=4)
+    sub_pk = mp.get('submission-id', None)
+    is_contest = mp.get('submission-type', 'contest')
+    if is_contest == 'contest':
+        sub = ContestSubmission.objects.filter(pk=sub_pk).first()
+    else:
+        sub = NormalSubmission.objects.filter(pk=sub_pk).first()
+    status = mp.get('status', None)
+    if not sub or not status or status not in conf.STATUS_CODE.keys():
+        logger.error("error status : %s", status)
+        return True
+    position = mp.get('position', '')
+    if position != '':
+        # CaseResult.deal_case_result(mp)
+        # cases = sub.get_info('cases')
+        case = {}
+        case['position'] = int(position)
+        case['submission'] = sub
+        case['time'] = mp.get('time', 0) * 1000
+        case['memory'] = mp.get('memory', 0)
+        case['status'] = status
+        sub.add_case(case)
+        if status == 'AC':
+            # sub.score += sub.problem.get_score(position)
+            sub.add_score(position)
             sub.save()
-        logger.info("judge end")
-    except Exception as ex:
-        logger.error("judge error: "+str(ex))
-        print ex
+        sub.deal_case_result(case)
+    else:
+        if 'compile-message' in mp:
+            sub.set_info('compile-message', mp['compile-message'])
+        sub.status = status
+        sub.save()
+    logger.info("judge end")
     return True
 
 

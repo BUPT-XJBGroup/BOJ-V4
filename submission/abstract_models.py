@@ -81,11 +81,18 @@ class AbstractSubmission(models.Model):
     def code(self):
         return self.code_file.file.read()
 
+    def get_id(self):
+        return "None"
+
+    def get_submission_type():
+        return "default"
+
     def judge(self, code):
         problem = self.get_problem()
         req = {
             'grader': 'custom',
-            'submission_id': self.id,
+            'submission_id': self.get_id(),
+            'submission_type': self.get_submission_type(),
             'problem_id': problem.id,
             'source': code,
             'language': self.language,
@@ -100,8 +107,7 @@ class AbstractSubmission(models.Model):
 
         self.score = 0
         self.status = 'PD'
-        # self.save()
-        self.code_file.save(str(self.pk), ContentFile(code))
+        self.code_file.save(self.get_submission_type() + "-" + str(self.get_id()), ContentFile(code))
         logger.warning("start pending judge for submission")
         resp = send_to_nsq('judge', json.dumps(req))
         if resp.get('code', None) == -1:
@@ -112,14 +118,14 @@ class AbstractSubmission(models.Model):
         self.save()
 
     def rejudge(self):
-        for c in self.cases.all():
-            c.delete()
+        self.set_info('cases', [])
         self.judge()
 
     def add_case(self, case):
         cases = self.get_info('cases', [])
         cases.append(case)
         self.set_info('cases', cases)
+        self.save()
 
 '''
 class CaseResult(models.Model):
@@ -145,4 +151,10 @@ class NormalSubmission(AbstractSubmission):
 
     def add_score(self, position):
         self.score += self.problem.get_score(position)
+
+    def get_submission_type(self):
+        return "normal"
+
+    def get_id(self):
+        return self.pk
 

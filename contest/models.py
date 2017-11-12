@@ -187,4 +187,9 @@ class Submission(AbstractSubmission):
     def get_problem(self):
         return self.problem.problem
 
+    def get_submission_type(self):
+        return "contest"
+
+    def get_id(self):
+        return self.pk
 

@@ -12,20 +12,13 @@ from submission.abstract_models import NormalSubmission
 from contest.models import Submission as ContestSubmission
 from contest.models import ContestSubmission as OldContestSubmission
 
-def test_contest():
-    cs = OldSubmission.objects.all()
-    for s in cs:
-        if s.contest_submission.count() > 1:
-            print "eror"
 
 if __name__ == '__main__':
-    test_contest()
     cs_ids = set()
 
     cs = OldContestSubmission.objects.all()
     for o in cs:
         cs_ids.add(o.submission_id)
-        '''
         s = ContestSubmission()
         oc = o.submission
         s.user = oc.user
@@ -44,8 +37,8 @@ if __name__ == '__main__':
             case['status'] = c.status
             s.add_case(case)
         s.save()
-        '''
 
+    '''
     ss = OldSubmission.objects.all()
     for o in ss:
         if o.pk in cs_ids:
@@ -67,7 +60,7 @@ if __name__ == '__main__':
             case['status'] = c.status
             s.add_case(case)
         s.save()
-
+    '''
 
 
 

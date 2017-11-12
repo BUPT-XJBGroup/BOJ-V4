@@ -96,6 +96,7 @@ STATUS_CODE = EnumChoice(
     ('MLE', u'内存使用超过限制'),
     ('OLE', u'输出长度超过限制'),
     ('IE', 'Internal Error'),
+    ('QUE', u'等待提交')
 )
 PROBLEM_TITLE_LENGTH = 64
 PROBLEM_MAX_LEN_DESC = 32768
