@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
-from .models import ContestSubmission
+from .models import Submission
 from .models import Contest, ContestProblem, Clarification, Notification
 
 

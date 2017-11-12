@@ -71,10 +71,11 @@ class AbstractSubmission(models.Model):
     def deal_case_result(self, case):
         if case['status'] == 'AC' and case['position'] < self.get_problem().cases.count() - 1:
             return
-        self.status = case.status
-        for c in self.cases.all():
-            self.running_time = max(self.running_time, c.running_time)
-            self.running_memory = max(self.running_memory, c.running_memory)
+        cases = self.cases
+        self.status = case['status']
+        for c in cases:
+            self.running_time = max(self.running_time, c['time'])
+            self.running_memory = max(self.running_memory, c['memory'])
         self.save()
 
     @property
@@ -126,16 +127,6 @@ class AbstractSubmission(models.Model):
         cases.append(case)
         self.set_info('cases', cases)
         self.save()
-
-'''
-class CaseResult(models.Model):
-    submission = models.ForeignKey(Submission, related_name='cases')
-    running_time = models.IntegerField(default=0)
-    running_memory = models.IntegerField(default=0)
-    status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
-    position = models.IntegerField()
-    output = models.CharField(max_length=128, default=0)
-'''
 
 
 class NormalSubmission(AbstractSubmission):

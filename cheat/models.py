@@ -1,7 +1,7 @@
 from django.db import models
 import django_filters
 import django_tables2 as tables
-from contest.models import Contest, Notification, Clarification, ContestSubmission, ContestProblem
+from contest.models import Contest, Notification, Clarification, Submission, ContestProblem
 from django_tables2.utils import A
 
 # Create your models here.
@@ -10,8 +10,8 @@ from django_tables2.utils import A
 class Record(models.Model):
 
     problem = models.ForeignKey(ContestProblem, related_name='cheat')
-    sub1 = models.ForeignKey(ContestSubmission, related_name="record1")
-    sub2 = models.ForeignKey(ContestSubmission, related_name="record2")
+    sub1 = models.ForeignKey(Submission, related_name="record1")
+    sub2 = models.ForeignKey(Submission, related_name="record2")
     probability = models.FloatField(default=0.0, db_index=True)
     user1 = models.CharField(max_length='32', default='', db_index=True)
     user2 = models.CharField(max_length='32', default='', db_index=True)

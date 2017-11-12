@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from ojuser.models import GroupProfile
-from submission.models import Submission as Sub
 from submission.abstract_models import AbstractSubmission
 from problem.models import Problem
 from bojv4 import conf
@@ -91,12 +90,6 @@ class ContestProblem(models.Model):
 
     def __unicode__(self):
         return self.index + '. ' + self.title
-
-
-class ContestSubmission(models.Model):
-    problem = models.ForeignKey(ContestProblem, related_name='submissions')
-    submission = models.OneToOneField(Sub, related_name='contest_submission')
-
 
 class Notification(models.Model):
 

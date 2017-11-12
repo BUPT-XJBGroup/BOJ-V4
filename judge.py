@@ -58,15 +58,15 @@ def submission_handler(message):
         # cases = sub.get_info('cases')
         case = {}
         case['position'] = int(position)
-        case['submission'] = sub
-        case['time'] = mp.get('time', 0) * 1000
+        case['time'] = int(mp.get('time', 0) * 1000)
         case['memory'] = mp.get('memory', 0)
         case['status'] = status
         sub.add_case(case)
         if status == 'AC':
             # sub.score += sub.problem.get_score(position)
-            sub.add_score(position)
+            sub.add_score(int(position))
             sub.save()
+        logger.error("======================json success2==================")
         sub.deal_case_result(case)
     else:
         if 'compile-message' in mp:
