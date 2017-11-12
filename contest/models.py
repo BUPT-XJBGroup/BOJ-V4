@@ -95,7 +95,7 @@ class ContestProblem(models.Model):
 
 class ContestSubmission(models.Model):
     problem = models.ForeignKey(ContestProblem, related_name='submissions')
-    submission = models.ForeignKey(Sub, related_name='contest_submission')
+    submission = models.OneToOneField(Sub, related_name='contest_submission')
 
 
 class Notification(models.Model):
