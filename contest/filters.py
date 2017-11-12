@@ -1,7 +1,7 @@
 #encoding: utf-8
 import django_filters
 from django_filters.widgets import BooleanWidget
-from .models import Contest, ContestSubmission
+from .models import Contest, Submission
 from django.contrib.auth.models import User
 from ojuser.models import GroupProfile
 from guardian.shortcuts import get_objects_for_user
@@ -12,22 +12,22 @@ from bojv4.conf import LANGUAGE, STATUS_CODE
 class SubmissionFilter(django_filters.FilterSet):
 
     pk = django_filters.CharFilter(name='id', label='id')
-    submission__language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label=u'语言')
+    language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label=u'语言')
     problem = django_filters.ModelChoiceFilter(queryset=(('A', 'A'),), label=u'题目')
-    submission__status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='状态')
-    submission__user = django_filters.ModelChoiceFilter(queryset=User.objects.all(), label=u'用户')
+    status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='状态')
+    user = django_filters.ModelChoiceFilter(queryset=User.objects.all(), label=u'用户')
 
     def __init__(self, *args, **kwargs):
         self.problems = kwargs.pop('problems')
         self.users = kwargs.pop('users')
         super(SubmissionFilter, self).__init__(*args, **kwargs)
         self.filters.get('problem').queryset=self.problems
-        self.filters.get('submission__user').queryset=self.users
+        self.filters.get('user').queryset=self.users
 
 
     class Meta:
-        model = ContestSubmission
-        fields = ['pk', 'problem', 'submission__language', 'submission__status']
+        model = Submission
+        fields = ['pk', 'problem', 'language', 'status', 'user']
         order_by = 'desc'
 
 

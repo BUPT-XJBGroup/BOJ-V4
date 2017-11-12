@@ -1,38 +1,73 @@
 import os, sys
 import django
+from django.core.files.base import ContentFile
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
-from submission.models import Submission, CaseResult
-from contest.models import ContestSubmission, ContestProblem, Contest
-from django.contrib.auth.models import User
-contest = Contest.objects.first()
-group = contest.group
-cprob = ContestProblem.objects.first()
-problem = cprob.problem
-print contest.title
-print group.nickname
-print problem.title
+from filer.models.filemodels import File
+from submission.models import Submission as OldSubmission
+from submission.abstract_models import NormalSubmission
+from contest.models import Submission as ContestSubmission
+from contest.models import ContestSubmission as OldContestSubmission
+
+def test_contest():
+    cs = OldSubmission.objects.all()
+    for s in cs:
+        if s.contest_submission.count() > 1:
+            print "eror"
 
 if __name__ == '__main__':
-    with open('./data.count', 'r') as f:
-        j = 0
-        for x in f.readlines():
-            filename = x.split(' ')[0].split(':')[0][2:]
-            filename = './cheatdata/' + filename
-            s = ContestSubmission()
-            u = User(username='testuser__' + str(j), password='123456', email='cheatuser_'+str(j) +'@qq.com')
-            j += 1
-            u.save()
-            group.user_group.user_set.add(u)
-            group.save()
-            with open(filename, 'r') as f2:
-                data = f2.read()
-                sub = Submission(problem=problem, user=u, code=data, language='CPP03', status='AC')
-                sub.save()
-                s.submission = sub
-                s.problem = cprob
-                s.save()
+    test_contest()
+    cs_ids = set()
+
+    cs = OldContestSubmission.objects.all()
+    for o in cs:
+        cs_ids.add(o.submission_id)
+        '''
+        s = ContestSubmission()
+        oc = o.submission
+        s.user = oc.user
+        s.problem = o.problem
+        s.code_file = oc.code_file
+        s.status = oc.status
+        s.create_time = oc.create_time
+        s.score = oc.score
+        s.language = oc.language
+        s.info = oc.info
+        for c in oc.cases.all():
+            case = {}
+            case['position'] = c.position
+            case['time'] = c.running_time
+            case['memory'] = c.running_memory
+            case['status'] = c.status
+            s.add_case(case)
+        s.save()
+        '''
+
+    ss = OldSubmission.objects.all()
+    for o in ss:
+        if o.pk in cs_ids:
+            continue
+        s = NormalSubmission()
+        s.user = o.user
+        s.problem = o.problem
+        s.code_file = o.code_file
+        s.status = o.status
+        s.create_time = o.create_time
+        s.score = o.score
+        s.language = o.language
+        s.info = o.info
+        for c in o.cases.all():
+            case = {}
+            case['position'] = c.position
+            case['time'] = c.running_time
+            case['memory'] = c.running_memory
+            case['status'] = c.status
+            s.add_case(case)
+        s.save()
+
+
+
 

@@ -32,15 +32,15 @@
                     </tr>
                     <tr>
                         <td>运行时间: </td>
-                        <td>{{ object.submission.running_time }}</td>
+                        <td>{{ object.running_time }}</td>
                     </tr>
                     <tr>
                         <td>运行内存: </td>
-                        <td>{{ object.submission.running_memory }}</td>
+                        <td>{{ object.running_memory }}</td>
                     </tr>
                     <tr>
                         <td>提交用户: </td>
-                        <td><strong>{{ object.submission.user.username }}</strong></td>
+                        <td><strong>{{ object.user.username }}</strong></td>
                     </tr>
                     </tbody>
                 </table>
@@ -65,7 +65,7 @@
                         <h4>代码</h4>
                     </div>
                     <div class="ibox-content">
-                        <textarea id="code-text">{{ object.submission.code }}</textarea>
+                        <textarea id="code-text">{{ object.code }}</textarea>
                     </div>
                 </div>
             </div>

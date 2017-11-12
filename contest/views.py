@@ -4,7 +4,7 @@ import json
 import math
 from functools import wraps
 
-from .models import Contest, ContestProblem, ContestSubmission, Notification, Clarification\
+from .models import Contest, ContestProblem, Submission, Notification, Clarification\
     , ProblemRecord, BoradRecord
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
@@ -145,16 +145,15 @@ class ContestViewSet(ModelViewSet):
             return Response(res)
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
         # cache.set(lock, 1, 1)
-        subs = ContestSubmission.objects.filter(problem__contest=contest).all()
+        subs = Submission.objects.filter(problem__contest=contest).all()
         probs = ContestProblem.objects.filter(contest=contest).all()
         mp = {}
         for p in probs:
             mp[p.index] = float(p.score) / max(1, p.problem.score)
         info = {}
-        for csub in subs:
-            sub = csub.submission
+        for sub in subs:
             uid = sub.user.username
-            idx = csub.problem.index
+            idx = sub.problem.index
             if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
                 continue
             if uid not in info:
@@ -322,7 +321,7 @@ class ProblemDetailView(DetailView):
 
 
 class SubmissionListView(ListView):
-    model = ContestSubmission
+    model = Submission
     template_name = 'contest/submission_list.html'
     paginate_by = 15
 
@@ -330,11 +329,11 @@ class SubmissionListView(ListView):
         queryset = None
         users = User.objects.filter(pk=self.request.user.pk).all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
-            queryset = ContestSubmission.objects.filter(problem__contest=self.contest).all()
+            queryset = Submission.objects.filter(problem__contest=self.contest).all()
             users |= self.contest.group.admin_group.user_set.all()
             users |= self.contest.group.user_group.user_set.all()
         else:
-            queryset = ContestSubmission.objects.filter(problem__contest=self.contest, submission__user=self.request.user).all()
+            queryset = Submission.objects.filter(problem__contest=self.contest, user=self.request.user).all()
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=queryset,
@@ -488,7 +487,7 @@ class SubmissionCreateView(DetailView):
 
 
 class SubmissionDetailView(DetailView):
-    model = ContestSubmission
+    model = Submission
     template_name = 'contest/submission_detail.html'
 
     @method_decorator(login_required)
@@ -497,31 +496,24 @@ class SubmissionDetailView(DetailView):
         self.contest = Contest.objects.filter(pk=cpk).first()
         if not self.contest:
             raise Http404()
-        if self.user != self.get_object().submission.user \
+        if self.user != self.get_object().user \
             and not request.user.has_perm("ojuser.change_groupprofile", self.contest.group):
             raise PermissionDenied
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        submission = self.object.submission
+        submission = self.object
         status = submission.get_status_display()
         if submission.status == 'JD':
-            status = u'正在运行第' + str(self.object.submission.cases.count()) + u'组数据'
+            status = u'正在运行第' + str(len(self.object.cases)) + u'组数据'
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         context['contest'] = self.contest
-        cases = []
-        for c in submission.cases.all():
-            cases.append({
-                'status': c.status,
-                'position': c.position,
-                'time': c.running_time,
-                'memory': c.running_memory,
-            })
-        if submission.status == 'JD' and submission.cases.count() < submission.problem.cases.count():
+        cases = submission.cases
+        if submission.status == 'JD' and len(cases) < submission.problem.cases.count():
             cases.append({
                 'status': 'Judging',
-                'position': submission.cases.count(),
+                'position': len(cases),
                 'time': 0,
                 'memory': 0,
             })

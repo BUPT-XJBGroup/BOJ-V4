@@ -1,6 +1,6 @@
 # encoding: utf-8
 import django_tables2 as tables
-from .models import Submission
+from .abstract_models import NormalSubmission as Submission
 from django_tables2.utils import A
 
 

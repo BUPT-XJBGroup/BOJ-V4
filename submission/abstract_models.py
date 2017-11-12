@@ -15,7 +15,6 @@ logger = logging.getLogger('django')
 class AbstractSubmission(models.Model):
     CODE_LENGTH_LIMIT = 65536
 
-    user = models.ForeignKey(User, related_name='submissions')
     create_time = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
     status = models.CharField(max_length=3, default="QUE", choices=conf.STATUS_CODE.choice())
@@ -40,33 +39,37 @@ class AbstractSubmission(models.Model):
 
     def get_status_display(self):
         if self.status == 'JD':
-            return 'Judging in ' + str(self.cases.count()) + 'th case'
+            return 'Judging in ' + str(len(self.cases)) + 'th case'
         return conf.STATUS_CODE.get_display_name(self.status)
 
     def set_info(self, key, value):
-        try:
-            _info = json.loads(self.info)
-        except Exception as ex:
-            _info = {}
-            print ex
-        _info[key] = value
-        self.info = json.dumps(_info)
-        print self.info
+        if not hasattr(self, '_info'):
+            try:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
+                print ex
+        self._info[key] = value
+        self.info = json.dumps(self._info)
 
-    def get_info(self, key):
-        try:
-            _info = json.loads(self.info)
-        except Exception as ex:
-            print "ex============="
-            _info = {}
-            print ex
-        return _info.get(key, None)
+    def get_info(self, key, default = None):
+        if not hasattr(self, '_info'):
+            try:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
+                logger.error("info parameter error: %s", ex)
+        return self._info.get(key, default)
+
+    @property
+    def cases(self):
+        return self.get_info('cases', [])
 
     def get_problem(self):
         raise Exception("no implement error")
 
     def deal_case_result(self, case):
-        if case.status == 'AC' and case.position < self.get_problem().cases.count() - 1:
+        if case['status'] == 'AC' and case['position'] < self.get_problem().cases.count() - 1:
             return
         self.status = case.status
         for c in self.cases.all():
@@ -113,6 +116,11 @@ class AbstractSubmission(models.Model):
             c.delete()
         self.judge()
 
+    def add_case(self, case):
+        cases = self.get_info('cases', [])
+        cases.append(case)
+        self.set_info('cases', cases)
+
 '''
 class CaseResult(models.Model):
     submission = models.ForeignKey(Submission, related_name='cases')
@@ -124,13 +132,17 @@ class CaseResult(models.Model):
 '''
 
 
-class Submission(AbstractSubmission):
+class NormalSubmission(AbstractSubmission):
 
-    problem = models.ForeignKey(Problem, related_name='submissions')
+    problem = models.ForeignKey(Problem, related_name='submission')
+    user = models.ForeignKey(User, related_name='normal_submissions')
 
     def get_problem(self):
         return self.problem
 
     class Meta:
         db_table = 'submission'
+
+    def add_score(self, position):
+        self.score += self.problem.get_score(position)
 

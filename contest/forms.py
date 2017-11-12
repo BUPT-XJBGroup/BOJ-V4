@@ -2,8 +2,7 @@
 from django import forms
 from datetime import datetime, timedelta, date, time
 from bojv4.conf import LANGUAGE_MASK, LANGUAGE
-from submission.models import Submission
-from .models import Contest, ContestSubmission, Notification, Clarification, ContestProblem
+from .models import Contest, Submission, Notification, Clarification, ContestProblem
 from ojuser.models import GroupProfile
 from django_select2.forms import ModelSelect2Widget
 
@@ -73,7 +72,7 @@ class SubmissionForm(forms.ModelForm):
     code = forms.CharField(label=u'代码', widget=forms.Textarea, max_length=65535)
 
     class Meta:
-        model = ContestSubmission
+        model = Submission
         fields = ['problem', 'language', 'code']
 
     def set_choice(self, contest):

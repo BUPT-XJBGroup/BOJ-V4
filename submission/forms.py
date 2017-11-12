@@ -1,6 +1,6 @@
 #encoding: utf-8
 from django import forms
-from .models import Submission
+from .abstract_models import NormalSubmission
 from bojv4.conf import LANGUAGE
 from django_select2.forms import ModelSelect2Widget
 
@@ -11,7 +11,7 @@ class SubmissionForm(forms.ModelForm):
     code = forms.CharField(max_length=65535, widget=forms.Textarea)
 
     class Meta:
-        model = Submission
+        model = NormalSubmission
         fields = ('code', 'language')
 
     def __init__(self, qs=None, *args, **kwargs):

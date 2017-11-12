@@ -95,7 +95,7 @@ class ContestProblem(models.Model):
 
 class ContestSubmission(models.Model):
     problem = models.ForeignKey(ContestProblem, related_name='submissions')
-    submission = models.OneToOneField(Sub, related_name='contest_submission')
+    submission = models.ForeignKey(Sub, related_name='contest_submission')
 
 
 class Notification(models.Model):
@@ -178,7 +178,8 @@ class BoradRecord(object):
 
 class Submission(AbstractSubmission):
 
-    problem = models.ForeignKey(ContestProblem, related_name='submissions')
+    problem = models.ForeignKey(ContestProblem, related_name='contest_submissions')
+    user = models.ForeignKey(User, related_name='contest_submissions')
 
     class Meta:
         db_table = 'contest_submission'

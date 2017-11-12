@@ -44,23 +44,23 @@ class Submission(models.Model):
         return conf.STATUS_CODE.get_display_name(self.status)
 
     def set_info(self, key, value):
-        try:
-            _info = json.loads(self.info)
-        except Exception as ex:
-            _info = {}
-            print ex
-        _info[key] = value
-        self.info = json.dumps(_info)
-        print self.info
+        if not hasattr(self, '_info'):
+            try:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
+                print ex
+        self._info[key] = value
+        self.info = json.dumps(self._info)
 
     def get_info(self, key):
-        try:
-            _info = json.loads(self.info)
-        except Exception as ex:
-            print "ex============="
-            _info = {}
-            print ex
-        return _info.get(key, None)
+        if not hasattr(self, '_info'):
+            try:
+                self._info = json.loads(self.info)
+            except Exception as ex:
+                self._info = {}
+                logger.error("info parameter error: ", ex)
+        return self._info.get(key, None)
 
     def deal_case_result(self, case):
         if case.status == 'AC' and case.position < self.problem.cases.count() - 1:

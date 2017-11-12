@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import detail_route
 from bojv4.conf import LANGUAGE
 
-from .models import Submission, CaseResult
+from .abstract_models import NormalSubmission as Submission
 from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
 from .tables import SubmissionTable
@@ -48,12 +48,12 @@ class SubmissionListView(ListView):
 
     model = Submission
     paginate_by = 15
+    template_name = 'submission/submission_list.html'
 
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
         res = Problem.objects.filter(groups__in=groups).all()
-        ans = Submission.objects.filter(problem__groups__in=groups)\
-                .filter(contest_submission__isnull=True).order_by('-pk')
+        ans = Submission.objects.filter(problem__groups__in=groups).order_by('-pk')
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=ans,
@@ -80,6 +80,7 @@ class SubmissionListView(ListView):
 class SubmissionDetailView(DetailView):
 
     model = Submission
+    template_name = 'submission/submission_detail.html'
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
@@ -101,18 +102,11 @@ class SubmissionDetailView(DetailView):
         context['status'] = status
         ce = self.object.get_info('compile-message')
         context['compile_message'] = ce
-        cases = []
-        for c in self.object.cases.all():
-            cases.append({
-                'status': c.status,
-                'position': c.position,
-                'time': c.running_time,
-                'memory': c.running_memory,
-            })
-        if self.object.status == 'JD' and self.object.cases.count() < self.object.problem.cases.count():
+        cases = self.object.cases
+        if self.object.status == 'JD' and len(cases) < self.object.problem.cases.count():
             cases.append({
                 'status': 'Judging',
-                'position': self.object.cases.count(),
+                'position': len(cases),
                 'time': 0,
                 'memory': 0,
             })
@@ -123,7 +117,7 @@ class SubmissionDetailView(DetailView):
 class SubmissionCreateView(SuccessMessageMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
-    template_name_suffix = '_create_form'
+    template_name = 'submission/submission_create_form.html'
     success_message = "your submission has been created successfully"
 
     @method_decorator(login_required)

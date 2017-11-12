@@ -1,6 +1,6 @@
 # encoding: utf-8
 import django_tables2 as tables
-from .models import Contest, Notification, Clarification, ContestSubmission
+from .models import Contest, Notification, Clarification, Submission
 from django_tables2.utils import A
 
 
@@ -54,15 +54,15 @@ class SubmissionTable(tables.Table):
     pk = tables.LinkColumn('contest:submission-detail', args=[A('problem.contest.pk'), A('pk')], verbose_name='id')
     problem = tables.LinkColumn('contest:problem-detail', args=[A('problem.contest.pk'),
         A('problem.index')], verbose_name=u"题目")
-    status = tables.Column(accessor='submission.status', verbose_name=u"运行结果")
-    running_time = tables.Column(accessor='submission.running_time', verbose_name=u"运行时间")
-    running_memory = tables.Column(accessor='submission.running_memory', verbose_name=u"内存使用")
-    language = tables.Column(accessor='submission.language', verbose_name=u"程序语言")
-    user = tables.Column(accessor='submission.user', verbose_name=u"提交用户")
-    create_time = tables.DateTimeColumn(accessor='submission.create_time', verbose_name=u"创建时间")
+    status = tables.Column(accessor='status', verbose_name=u"运行结果")
+    running_time = tables.Column(accessor='running_time', verbose_name=u"运行时间")
+    running_memory = tables.Column(accessor='running_memory', verbose_name=u"内存使用")
+    language = tables.Column(accessor='language', verbose_name=u"程序语言")
+    user = tables.Column(accessor='user', verbose_name=u"提交用户")
+    create_time = tables.DateTimeColumn(accessor='create_time', verbose_name=u"创建时间")
 
     class Meta:
-        model = ContestSubmission
+        model = Submission
         fields = ('pk', 'problem', 'status', 'running_time', 'running_memory', 'language',
                   'user', 'create_time')
         template = 'django_tables2/bootstrap.html'

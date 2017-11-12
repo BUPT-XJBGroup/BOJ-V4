@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Submission
+from .abstract_models import NormalSubmission as Submission
 from problem.models import Problem
 
 

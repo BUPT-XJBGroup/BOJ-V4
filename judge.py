@@ -14,9 +14,10 @@ sys.path.append(BASE_DIR)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
-from submission.models import Submission, CaseResult
+from submission.abstract_models import NormalSubmission
+from contest.models import Submission as ContestSubmission
 from django.core.files.base import ContentFile
-from contest.models import ContestSubmission, ContestProblem
+from contest.models import ContestProblem
 from django.contrib.auth.models import User
 import logging
 logger = logging.getLogger('judge')
@@ -36,7 +37,6 @@ class NsqQueue(object):
     def start(cls):
         nsq.run()
 
-
 def submission_handler(message):
     logger.info('receive judge result')
     try:
@@ -44,7 +44,11 @@ def submission_handler(message):
         mp = json.loads(message.body)
         # print json.dumps(mp, indent=4)
         sub_pk = mp.get('submission-id', None)
-        sub = Submission.objects.filter(pk=sub_pk).first()
+        is_contest = mp.get('contest', True)
+        if is_contest:
+            sub = ContestSubmission.objects.filter(pk=sub_pk).first()
+        else:
+            sub = NormalSubmission.objects.filter(pk=sub_pk).first()
         status = mp.get('status', None)
         if not sub or not status or status not in conf.STATUS_CODE.keys():
             logger.error("error status : %s", status)
@@ -52,15 +56,17 @@ def submission_handler(message):
         position = mp.get('position', '')
         if position != '':
             # CaseResult.deal_case_result(mp)
-            case = CaseResult()
-            case.position = int(position)
-            case.submission = sub
-            case.running_time = mp.get('time', 0) * 1000
-            case.running_memory = mp.get('memory', 0)
-            case.status = status
-            case.save()
+            # cases = sub.get_info('cases')
+            case = {}
+            case['position'] = int(position)
+            case['submission'] = sub
+            case['time'] = mp.get('time', 0) * 1000
+            case['memory'] = mp.get('memory', 0)
+            case['status'] = status
+            sub.add_case(case)
             if status == 'AC':
-                sub.score += sub.problem.get_score(position)
+                # sub.score += sub.problem.get_score(position)
+                sub.add_score(position)
                 sub.save()
             sub.deal_case_result(case)
         else:
@@ -80,14 +86,13 @@ def submit_handler(message):
         mp = json.loads(message.body)
         s = ContestSubmission()
         s.problem = ContestProblem.objects.get(pk=int(mp['problem']))
-        sub = Submission()
-        sub.language = mp['language']
-        sub.problem = s.problem.problem
-        sub.user = User.objects.get(pk=int(mp['user']))
-        sub.save()
-        s.submission = sub
+        s.language = mp['language']
+        # sub.problem = s.problem.problem
+        s.user = User.objects.get(pk=int(mp['user']))
         s.save()
-        sub.judge(mp['code'])
+        # s.submission = sub
+        # s.save()
+        s.judge(mp['code'])
     except Exception as ex:
         print ex
     return True

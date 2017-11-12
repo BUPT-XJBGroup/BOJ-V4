@@ -1,7 +1,7 @@
 #encoding: utf-8
 import django_filters
 from django_filters.widgets import LookupTypeWidget
-from .models import Submission
+from .abstract_models import NormalSubmission as Submission
 from problem.models import Problem
 from guardian.shortcuts import get_objects_for_user
 
