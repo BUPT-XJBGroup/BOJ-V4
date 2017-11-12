@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from ojuser.models import GroupProfile
-from submission.models import Submission
+from submission.models import Submission as Sub
+from submission.abstract_models import AbstractSubmission
 from problem.models import Problem
 from bojv4 import conf
 from datetime import datetime, timedelta
@@ -94,7 +95,7 @@ class ContestProblem(models.Model):
 
 class ContestSubmission(models.Model):
     problem = models.ForeignKey(ContestProblem, related_name='submissions')
-    submission = models.OneToOneField(Submission, related_name='contest_submission')
+    submission = models.OneToOneField(Sub, related_name='contest_submission')
 
 
 class Notification(models.Model):
@@ -173,3 +174,16 @@ class BoradRecord(object):
             'nickname': self.nickname,
             'problems': [x.to_json() for x in self.problems]
         }
+
+
+class Submission(AbstractSubmission):
+
+    problem = models.ForeignKey(ContestProblem, related_name='submissions')
+
+    class Meta:
+        db_table = 'contest_submission'
+
+    def get_problem(self):
+        return self.problem.problem
+
+
