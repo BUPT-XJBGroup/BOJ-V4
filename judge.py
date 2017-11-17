@@ -64,16 +64,9 @@ def submission_handler(message):
         case['memory'] = mp.get('memory', 0)
         case['status'] = status
         try:
-            logger.error("submission-type: %s", type(sub))
             sub.add_case(case)
-            logger.error("submission-type-case: %s", type(sub))
-            if status == 'AC':
-                sub.add_score(int(position))
-            logger.error("submission-type-score: %s", type(sub))
             sub.deal_case_result(case)
-            logger.error("submission-type-deal: %s", type(sub))
             sub.save()
-            logger.error("submission-type-save: %s", type(sub))
         except Exception as ex:
             logger.error("result error: ", ex)
     else:
@@ -90,6 +83,8 @@ def submit_handler(message):
         mp = json.loads(message.body)
         s = ContestSubmission()
         s.problem = ContestProblem.objects.get(pk=int(mp['problem']))
+        s.problem.all_sub += 1
+        s.problem.save()
         s.language = mp['language']
         # sub.problem = s.problem.problem
         s.user = User.objects.get(pk=int(mp['user']))

@@ -186,6 +186,12 @@ class Submission(AbstractSubmission):
     def add_socre(self, position):
         pass
 
+    def deal_case_result(self, case):
+        super(Submission, self).deal_case_result(case)
+        if case['status'] == 'AC' and case['position'] == self.get_problem().cases.count() - 1:
+            self.problem.ac_sub += 1
+            self.problem.save()
+
     def get_id(self):
         return self.pk
 
