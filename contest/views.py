@@ -30,6 +30,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.shortcuts import get_object_or_404
 
 from guardian.shortcuts import get_objects_for_user
+
 from django_tables2 import RequestConfig
 
 from rest_framework.permissions import IsAuthenticated, BasePermission
@@ -37,6 +38,9 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework.request import Request
+
+from .utils import get_users_with_perm
+
 import logging
 logger = logging.getLogger('django')
 # Create your views here.
@@ -154,8 +158,17 @@ class ContestViewSet(ModelViewSet):
             return Response(self.get_board_from_cache(group_id, res))
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
         # cache.set(lock, 1, 1)
-        subs = Submission.objects.filter(problem__contest=contest).all()
-        probs = ContestProblem.objects.filter(contest=contest).all()
+
+        # Calculate the board
+
+        subs = Submission.objects.select_related("user", "user__profile", "problem")\
+            .filter(problem__contest=contest, user__is_superuser=False)\
+            .all()
+        probs = ContestProblem.objects.select_related("problem").filter(contest=contest).all()
+
+        # Get users who have permission change_groupprofile to the current contest's group
+        admins = set(get_users_with_perm(contest.group, 'change_groupprofile', True, True))
+
         mp = {}
         for p in probs:
             mp[p.index] = float(p.score) / max(1, p.problem.score)
@@ -163,12 +176,13 @@ class ContestViewSet(ModelViewSet):
         for sub in subs:
             uid = sub.user.username
             idx = sub.problem.index
-            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
+            # if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
+            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user in admins:
                 continue
             if uid not in info:
                 # info[uid] = {'username': uid, 'nickname': sub.user.profile.nickname}
                 info[uid] = BoradRecord(username=uid, nickname=sub.user.profile.nickname)
-            uinfo = info[uid] 
+            uinfo = info[uid]
             pinfo = uinfo.problems
             if idx not in pinfo:
                 pinfo[idx] = ProblemRecord(idx)
@@ -195,6 +209,12 @@ class ContestViewSet(ModelViewSet):
         else:
             info.sort(key=lambda x: x.pen, reverse=True)
         ans = [x.to_json() for x in info]
+
+
+        # scoreMap = {}
+        # for p in probs:
+        #     scoreMap[p.id] = float(p.score) / max(1, p.problem.score)
+
         cache.set(contest.key(), ans, CONTEST_CACHE_EXPIRE_TIME)
         return Response(self.get_board_from_cache(group_id, ans))
 
