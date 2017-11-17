@@ -9,6 +9,7 @@ from bojv4 import conf
 from common.nsq_client import send_to_nsq
 import json
 import logging
+import copy
 logger = logging.getLogger('django')
 
 
@@ -63,9 +64,12 @@ class AbstractSubmission(models.Model):
 
     @property
     def cases(self):
-        return self.get_info('cases', [])
+        return copy.deepcopy(self.get_info('cases', []))
 
     def get_problem(self):
+        raise Exception("no implement error")
+
+    def add_score(self, score):
         raise Exception("no implement error")
 
     def deal_case_result(self, case):

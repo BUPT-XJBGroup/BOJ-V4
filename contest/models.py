@@ -183,6 +183,9 @@ class Submission(AbstractSubmission):
     def get_submission_type(self):
         return "contest"
 
+    def add_socre(self, position):
+        pass
+
     def get_id(self):
         return self.pk
 
