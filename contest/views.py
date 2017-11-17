@@ -135,14 +135,23 @@ class ContestViewSet(ModelViewSet):
         )
         return Response({'code': 0})
 
+    def get_board_from_cache(self, group_id, data):
+        if not group_id:
+            return data
+        group = GroupProfile.objects.filter(pk=group_id).first()
+        if not group:
+            return data
+        users = set(User.objects.filter(group__include=group).values_list('username'))
+        return filter(lambda x: x['username'] in users, data)
+
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
+        group_id = request.GET.get('group-id', None)
         contest = self.get_object()
-
         lock = str(contest.pk) + "__lock"
         if cache.get(lock):
             res = cache.get(contest.key())
-            return Response(res)
+            return Response(self.get_board_from_cache(group_id, res))
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
         # cache.set(lock, 1, 1)
         subs = Submission.objects.filter(problem__contest=contest).all()
@@ -187,7 +196,7 @@ class ContestViewSet(ModelViewSet):
             info.sort(key=lambda x: x.pen, reverse=True)
         ans = [x.to_json() for x in info]
         cache.set(contest.key(), ans, CONTEST_CACHE_EXPIRE_TIME)
-        return Response(ans)
+        return Response(self.get_board_from_cache(group_id, ans))
 
 
 class ContestListView(ListView):
@@ -380,6 +389,7 @@ class BoardView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context['problems'] = self.object.problems.all()
+        context['view_groups'] = self.contest.group.get_descendants(include_self=True)
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             context['is_admin'] = True
         return context
@@ -510,7 +520,7 @@ class SubmissionDetailView(DetailView):
         context['status'] = status
         context['contest'] = self.contest
         cases = submission.cases
-        if submission.status == 'JD' and len(cases) < submission.problem.cases.count():
+        if submission.status == 'JD' and len(cases) < submission.problem.problem.cases.count():
             cases.append({
                 'status': 'Judging',
                 'position': len(cases),

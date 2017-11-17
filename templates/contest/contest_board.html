@@ -4,6 +4,12 @@
 
 <div>
     <h2>排行榜</h2>
+	<select id="select-group">
+		<option value="-1">---</option>
+		{% for g in view_groups %}
+		<option value="{{ g.pk }}">{{ g.nickname }}</option>
+		{% endfor %}
+	</select>
     <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
     <thead>
         <th width="10%">排名</th>
@@ -22,8 +28,12 @@
 {% block script_extra %}
     <script src='https://cdn.firebase.com/v0/firebase.js'></script>
 <script>
-    function getBoardData() {
-        $.get("/api/contest/{{ contest.pk }}/board/",
+    function getBoardData(group_id) {
+		var url = "/api/contest/{{ contest.pk }}/board/";
+		if (group_id != -1) { 
+			url += "?group_id=" + group_id;
+		}
+        $.get(url,
             function(result) {
                 if (!result.length) {
                     return;
@@ -54,7 +64,12 @@
                 }
         }, "json");
     }
-    getBoardData();
+	$(document).ready(function(){  
+		getBoardData(-1);
+		$('#select-group').change(function(){  
+			getBoardData($(this).children('option:selected').val());
+		}); 
+	});
     //setInterval(getBoardData(), 10000);
 </script>
 {% endblock %}

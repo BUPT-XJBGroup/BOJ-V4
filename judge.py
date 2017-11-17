@@ -45,8 +45,10 @@ def submission_handler(message):
     sub_pk = mp.get('submission-id', None)
     is_contest = mp.get('submission-type', 'contest')
     if is_contest == 'contest':
+        logger.error("contest submission")
         sub = ContestSubmission.objects.filter(pk=sub_pk).first()
     else:
+        logger.error("normal submission")
         sub = NormalSubmission.objects.filter(pk=sub_pk).first()
     status = mp.get('status', None)
     if not sub or not status or status not in conf.STATUS_CODE.keys():
@@ -61,13 +63,19 @@ def submission_handler(message):
         case['time'] = int(mp.get('time', 0) * 1000)
         case['memory'] = mp.get('memory', 0)
         case['status'] = status
-        sub.add_case(case)
-        if status == 'AC':
-            # sub.score += sub.problem.get_score(position)
-            sub.add_score(int(position))
+        try:
+            logger.error("submission-type: %s", type(sub))
+            sub.add_case(case)
+            logger.error("submission-type-case: %s", type(sub))
+            if status == 'AC':
+                sub.add_score(int(position))
+            logger.error("submission-type-score: %s", type(sub))
+            sub.deal_case_result(case)
+            logger.error("submission-type-deal: %s", type(sub))
             sub.save()
-        logger.error("======================json success2==================")
-        sub.deal_case_result(case)
+            logger.error("submission-type-save: %s", type(sub))
+        except Exception as ex:
+            logger.error("result error: ", ex)
     else:
         if 'compile-message' in mp:
             sub.set_info('compile-message', mp['compile-message'])
@@ -89,6 +97,7 @@ def submit_handler(message):
         # s.submission = sub
         # s.save()
         s.judge(mp['code'])
+        s.save()
     except Exception as ex:
         print ex
     return True
