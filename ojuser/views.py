@@ -350,7 +350,10 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             data=request.data['users'], many=True, context={'request': request}
         )
         if serializer.is_valid():
-            users = serializer.save()
+            try:
+                users = serializer.save()
+            except Exception, ex:
+                logger.error("add user error: %s\n", ex) 
             for r in serializer.data:
                 r['password'] = mp[r['username']]
             group_pk = request.data.get('group_pk', None)
@@ -360,7 +363,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                     group.user_group.user_set.add(*users)
                     group.save()
                 except Exception, ex:
-                    logger.error("add user error: \n" + str(ex)) 
+                    logger.error("add user to group error: %s", ex) 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
