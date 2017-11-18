@@ -62,7 +62,7 @@ class RecordDetailView(DetailView):
     def get_context_data(self, **kwargs):
         logger.warning('============test===============')
         context = super(RecordDetailView, self).get_context_data(**kwargs)
-        context['code1'] = self.get_object().sub1.submission.code
-        context['code2'] = self.get_object().sub2.submission.code
+        context['code1'] = self.get_object().sub1.code
+        context['code2'] = self.get_object().sub2.code
         return context
 

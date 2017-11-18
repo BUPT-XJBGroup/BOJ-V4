@@ -1,0 +1,6 @@
+{% load bootstrap3 %}
+
+{% if is_admin %}
+<a href="{% url 'contest-rejudge' record.pk %}" title="查看组资源">重新提交</a>
+{% endif %}
+

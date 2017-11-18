@@ -15,6 +15,7 @@ from problem.models import Problem
 from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
 from common.nsq_client import send_to_nsq
 from cheat.models import Record
+from ojuser.models import GroupProfile
 
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.contrib.auth.decorators import login_required
@@ -145,12 +146,14 @@ class ContestViewSet(ModelViewSet):
         group = GroupProfile.objects.filter(pk=group_id).first()
         if not group:
             return data
-        users = set(User.objects.filter(group__include=group).values_list('username'))
-        return filter(lambda x: x['username'] in users, data)
+        users = set(group.user_group.user_set.all().values_list('username'))
+        if not isinstance(data, list):
+            data = json.loads(data)
+        return filter(lambda x: (x['username'],) in users, data)
 
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
-        group_id = request.GET.get('group-id', None)
+        group_id = request.GET.get('group_id', None)
         contest = self.get_object()
         lock = str(contest.pk) + "__lock"
         if cache.get(lock):
@@ -359,8 +362,10 @@ class SubmissionListView(ListView):
         users = User.objects.filter(pk=self.request.user.pk).all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             queryset = Submission.objects.filter(problem__contest=self.contest).all()
-            users |= self.contest.group.admin_group.user_set.all()
-            users |= self.contest.group.user_group.user_set.all()
+            groups = self.contest.group.get_descendants(include_self=True)
+            for g in groups:
+                users |= g.admin_group.user_set.all()
+                users |= g.user_group.user_set.all()
         else:
             queryset = Submission.objects.filter(problem__contest=self.contest, user=self.request.user).all()
         self.filter = SubmissionFilter(
@@ -409,9 +414,9 @@ class BoardView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context['problems'] = self.object.problems.all()
-        context['view_groups'] = self.contest.group.get_descendants(include_self=True)
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             context['is_admin'] = True
+            context['view_groups'] = self.contest.group.get_descendants(include_self=True)
         return context
 
 
