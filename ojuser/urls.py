@@ -16,6 +16,7 @@ urlpatterns = [
         name='mygroup-reset-password'),
     url(r'^groups/(?P<group>[0-9]+)/(?P<pk>[0-9]+)/$', views.UserDeleteView.as_view(), name='group-user-delete'),
     url(r'^myusers/add/$', views.UserAddView.as_view(), name='user-add'),
+    url(r'^myusers/query/$', views.UserQueryView.as_view(), name='user-query'),
     url(r"^signup/$", views.OjUserSignupView.as_view(), name="account_signup"),
     url(r"^profiles/$", views.OjUserProfilesView.as_view(), name="account-profile"),
     url(r"^", include("account.urls"))

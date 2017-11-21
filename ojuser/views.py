@@ -31,7 +31,7 @@ from .serializers import UserSerializer, UserProfileSerializer, \
         get_rand_password, GroupProfileSerializer, UserSlugSerializer, GroupSerializer, \
         UserResetSerializer
 from .tables import GroupUserTable, GroupTable
-from .models import GroupProfile
+from .models import GroupProfile, UserProfile
 from .filters import GroupFilter
 
 from guardian.shortcuts import get_objects_for_user
@@ -318,6 +318,46 @@ class UserAddView(TemplateView):
         context['group_can_change'] = profiles_can_change.all()
         if self.request.GET.has_key('group_pk'):
             context['select_group'] = int(self.request.GET['group_pk'])
+        return context
+
+
+class UserQueryView(TemplateView):
+    """
+    For admins to query someone's profile, groups and permissions
+    """
+
+    template_name = 'ojuser/user_query.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserQueryView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        # TODO: I18N
+        context = super(UserQueryView, self).get_context_data(**kwargs)
+
+        if self.request.GET.has_key('username'):
+            username = self.request.GET['username']
+            try:
+                user = User.objects.select_related('profile').get(username = username)
+            except User.DoesNotExist:
+                context['query_error'] = "User named '{}' does not exist".format(username)
+                return context
+
+            if not self.request.user.has_perm(user):
+                context['query_error'] = "You don't have permission to view this user"
+                return context
+
+            joinedGroups = GroupProfile.objects.filter(user_group__user = user)
+            adminedGroups = GroupProfile.objects.filter(admin_group__user = user)
+            superAdminedGroup = GroupProfile.objects.filter(superadmin = user)
+
+            context['found_user'] = user
+            context['found_user_profile'] = user.profile
+            context['joined_groups'] = joinedGroups
+            context['admined_groups'] = adminedGroups
+            context['super_admined_groups'] = superAdminedGroup
+
         return context
 
 

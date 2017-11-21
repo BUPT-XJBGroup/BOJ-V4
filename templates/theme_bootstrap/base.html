@@ -45,7 +45,8 @@
                   <li><a href="{%url 'contest:contest-list' %}">考试</a></li>
                   <li><a href="{%url 'mygroup-list' %}">用户组</a></li>
                   {% if root_user %}
-                  <li><a href="{% url 'user-add' %}" target="_blank">添加用户</a></li>
+                    <li><a href="{% url 'user-add' %}" target="_blank">添加用户</a></li>
+                    <li><a href="{% url 'user-query' %}"  target="_blank">查询用户</a></li>
                   {% endif %}
               </ul>
               {% endblock %}

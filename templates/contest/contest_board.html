@@ -4,24 +4,31 @@
 
 <div>
     <h2>排行榜</h2>
-	<select id="select-group">
-		<option value="-1">---</option>
-		{% for g in view_groups %}
-		<option value="{{ g.pk }}">{{ g.nickname }}</option>
-		{% endfor %}
-	</select>
+    <div>
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="select-group" class="control-label">按组筛选</label>
+                <select id="select-group" class="form-control">
+                    <option value="-1">---</option>
+                    {% for g in view_groups %}
+                    <option value="{{ g.pk }}">{{ g.nickname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
     <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
-    <thead>
-        <th width="10%">排名</th>
-        <th width="14%">用户</th>
-        <th width="8%">题数</th>
-        <th width="8%">{% if contest.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
-        {%for p in problems %}
-        <th>{{p.index}}</th>
-        {%endfor%}
-    </thead>
-    <tbody id="id_body"></tbody>
-</table>
+        <thead>
+            <th width="10%">排名</th>
+            <th width="14%">用户</th>
+            <th width="8%">题数</th>
+            <th width="8%">{% if contest.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
+            {%for p in problems %}
+            <th>{{p.index}}</th>
+            {%endfor%}
+        </thead>
+        <tbody id="id_body"></tbody>
+    </table>
 </div>
 
 {% endblock %}

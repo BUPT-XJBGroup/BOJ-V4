@@ -1,0 +1,144 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load bootstrap3 %}
+
+{% block head_title %}查询用户{% endblock %}
+
+{% block body_class %}{% endblock %}
+
+{% block styles %}
+    {% include '_styles.html' %}
+    <style>
+        .max700 {
+            max-width: 700px;
+        }
+    </style>
+{% endblock %}
+
+{% block body_base %}
+
+<div class="container">
+    <h1>查询用户</h1>
+    <hr />
+
+    {% if query_error %}
+        {% bootstrap_alert query_error alert_type='danger' %}
+        <hr />
+    {% endif %}
+
+    <div class="max700">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="username-box" class="col-sm-3 control-label">用户名</label>
+                <div class="col-sm-9">
+                    <input id="username-box" class="form-control" type="text" placeholder="用户名" required name="username" autocomplete="off"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <input type="submit" value="查询" class="btn btn-primary" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <hr />
+
+    {% if found_user %}
+        <h2>用户资料</h2>
+        <div class="max700">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">用户名</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user.username }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">昵称</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user_profile.nickname }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">性别</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user_profile.get_gender_display }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">邮箱</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user.email }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">已激活</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user.is_active }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">超级用户</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user.is_superuser }}</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">是否为教师</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-static">{{ found_user_profile.is_teacher }}</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <hr />
+
+        {% if joined_groups.count > 0 %}
+            <h2>{{ found_user_profile.nickname }} 加入的组</h2>
+            <div class="max700">
+                <div class="list-group">
+                    {% for group in joined_groups %}
+                        <a href="{% url 'mygroup-detail' pk=group.id %}" class="list-group-item">
+                            {{ group.nickname }} ({{ group.name }})
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr />
+        {% endif %}
+
+        {% if admined_groups.count > 0 %}
+            <h2>{{ found_user_profile.nickname }} 管理的组 <span class="small">通过组关系而非超级用户身份</span></h2>
+            <div class="max700">
+                <div class="list-group">
+                    {% for group in admined_groups %}
+                        <a href="{% url 'mygroup-detail' pk=group.id %}" class="list-group-item">
+                            {{ group.nickname }} ({{ group.name }})
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr />
+        {% endif %}
+
+        {% if super_admined_groups.count > 0 %}
+            <h2>{{ found_user_profile.nickname }} 是超级管理员的组 <span class="small">通过组关系而非超级用户身份</span></h2>
+            <div class="max700">
+                <div class="list-group">
+                    {% for group in admined_groups %}
+                        <a href="{% url 'mygroup-detail' pk=group.id %}" class="list-group-item">
+                            {{ group.nickname }} ({{ group.name }})
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr />
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
