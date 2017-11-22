@@ -11,6 +11,8 @@
 <section class="jumbotron">
   <div class="container">
     <h3>group member</h3>
+    <div id="errorMsg">
+    </div>
     <div id="example"></div>
     <br>
     <div class="row">
@@ -43,7 +45,7 @@
 
 {% block extra_body %}
 <script src="{{ STATIC_URL }}handsontable/handsontable.full.js"></script>
-<link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css"></script>
+<link rel="stylesheet" media="screen" href="{{ STATIC_URL }}handsontable/handsontable.full.css" />
 <script>
   $(document).ready(function(){
 	var _data = [
@@ -64,10 +66,21 @@
         {data: 'status',readOnly: true},
       ],
       comments: true,
-
+      renderer: function(hotInstance, TD, row, col, prop, value) {
+          TD.textContent = value;
+          if (prop === 'status') {
+              if (typeof value === 'undefined' || value === null || value === '')
+                  TD.style.background = '#ffffff';
+              else if (value === 'added')
+                  TD.style.background = '#aaffaa';
+              else
+                  TD.style.background = '#ffaaaa';
+          }
+      }
     });
 
     $("#submit-btn").click( function() {
+      $('#errorMsg').html('');
       var dict = {},valid=true;
       for(var i=0;valid&&i<_data.length;i++){
         if(_data[i].username==""){
@@ -98,32 +111,54 @@
               table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
             }
             for (var i=0;i<res.length;i++){
-              _data[i].status="added"
-			  _data[i].password=res[i].password
+              _data[i].status="added";
+			  _data[i].password=res[i].password;
             }
             table.handsontable('render');
             alert("All is added!");
           },
           error: function(errors) {
-            // errors=errors.responseJSON;
-            for (var i=0;i<3*errors.length;i++){
-              table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
+            //errors=errors.responseJSON;
+            if (errors.status >= 500) {
+                $('#errorMsg').html('<div class="alert alert-danger alert-dismissible">' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span></button>' +
+                    '未知错误 (' + errors.status + ')</div>');
             }
-            for (var i=0;i<errors.length;i++){
-              if(Object.keys(errors[i]).length==0)
-                _data[i].status="ok";
-              else{
-                if(errors[i].username)
-                  table.handsontable('getCellMeta', i, 0).comment=errors[i].username;
-                if(errors[i].nickname)
-                  table.handsontable('getCellMeta', i, 1).comment=errors[i].nickname;
-                if(errors[i].password)
-                  table.handsontable('getCellMeta', i, 2).comment=errors[i].password;
-                _data[i].status="error";
-              }
+            else
+            {
+                errors = errors.responseJSON;
+                //for (var i=0;i<3*errors.length;i++){
+                //  table.handsontable('getPlugin','comments').removeCommentAtCell(i/3, i%3);
+                //}
+                //for (var i=0;i<errors.length;i++){
+                //  if(Object.keys(errors[i]).length !== 0)
+                //  //  _data[i].status="ok";
+                //  //else{
+                //  {
+                //    if(errors[i].username)
+                //      table.handsontable('getCellMeta', i, 0).comment=errors[i].username;
+                //    if(errors[i].nickname)
+                //      table.handsontable('getCellMeta', i, 1).comment=errors[i].nickname;
+                //    if(errors[i].password)
+                //      table.handsontable('getCellMeta', i, 2).comment=errors[i].password;
+                //    _data[i].status="error";
+                //  }
+                //}
+                for (_i = 0; _i < errors.length; _i++) {
+                    _data[_i].status = '';
+                    first = true;
+                    for (item in errors[_i]) {
+                        if (first)
+                            first = false;
+                        else
+                            _data[_i].status += '\n';
+                        _data[_i].status += item + ': ' + errors[_i][item];
+                    }
+                }
+                table.handsontable('render');
+                alert("error!");
             }
-            table.handsontable('render');
-            alert("error!");
           }
         });
       }

@@ -336,21 +336,21 @@ class UserQueryView(TemplateView):
         # TODO: I18N
         context = super(UserQueryView, self).get_context_data(**kwargs)
 
-        if self.request.GET.has_key('username'):
+        if 'username' in self.request.GET:
             username = self.request.GET['username']
             try:
-                user = User.objects.select_related('profile').get(username = username)
+                user = User.objects.select_related('profile').get(username=username)
             except User.DoesNotExist:
                 context['query_error'] = "User named '{}' does not exist".format(username)
                 return context
 
-            if not self.request.user.has_perm(user):
+            if not self.request.user.is_staff:
                 context['query_error'] = "You don't have permission to view this user"
                 return context
 
-            joinedGroups = GroupProfile.objects.filter(user_group__user = user)
-            adminedGroups = GroupProfile.objects.filter(admin_group__user = user)
-            superAdminedGroup = GroupProfile.objects.filter(superadmin = user)
+            joinedGroups = GroupProfile.objects.filter(user_group__user=user)
+            adminedGroups = GroupProfile.objects.filter(admin_group__user=user)
+            superAdminedGroup = GroupProfile.objects.filter(superadmin=user)
 
             context['found_user'] = user
             context['found_user_profile'] = user.profile
@@ -383,7 +383,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             raise PermissionDenied
         mp = {}
         for m in request.data['users']:
-            if not m.has_key('password'):
+            if not m.has_key('password') or m['password'] == '':
                 m['password'] = get_rand_password()
             mp[m['username']] = m['password']
         serializer = UserProfileSerializer(
@@ -393,7 +393,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             try:
                 users = serializer.save()
             except Exception, ex:
-                logger.error("add user error: %s\n", ex) 
+                logger.error("add user error: %s\n", ex)
+                raise
             for r in serializer.data:
                 r['password'] = mp[r['username']]
             group_pk = request.data.get('group_pk', None)
@@ -403,7 +404,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                     group.user_group.user_set.add(*users)
                     group.save()
                 except Exception, ex:
-                    logger.error("add user to group error: %s", ex) 
+                    logger.error("add user to group error: %s", ex)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

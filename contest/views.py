@@ -40,7 +40,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework.request import Request
 
-from .utils import get_users_with_perm
+from ojuser.utils import get_users_with_perm
 
 import logging
 logger = logging.getLogger('django')
