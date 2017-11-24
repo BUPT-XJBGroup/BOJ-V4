@@ -286,7 +286,7 @@ class ContestCreateView(CreateView):
         self.object.lang_limited = form.cleaned_data['lang_limited']
         self.object.group = self.group
         self.object.save()
-        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
+        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         for i in range(len(problem_list)):
             p = Problem.objects.filter(pk=problem_list[i]).first()
             if not p or ContestProblem.objects.filter(problem=p, contest=self.object).count() > 0:

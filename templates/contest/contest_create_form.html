@@ -33,7 +33,7 @@
                 </thead>
                 {% for p in control_problem %}
                 <tr>
-                    <td><button class="btn add-prob-btn" type="button" onclick="add_prob({{p.id}}, '{{p.title}}')">添加</button></td>
+                    <td><button class="btn btn-default add-prob-btn" type="button" onclick="add_prob({{p.id}}, '{{p.title}}')">添加</button></td>
                     <td><span class="recent_problem_id">{{ p.id }}</span></td>
                     <td><span class="recent_problem_title">{{ p.title }}</span></td>
                 </tr>
@@ -53,11 +53,11 @@
             <tbody>
             {% for p in problems %}
                 <tr class="prob_element">
-                    <td><button class="btn" type="button" onclick="del_prob(this)">删除</button></td>
-                    <td><input type="text" name="problem_id" onchange="checkProb(this)" value="{{p.problem.pk}}" placeholder="Problem ID" autocomplete="off"></td>
-                    <td><input type="text" name="problem_title_custom" value="{{p.problem.title}}" placeholder="Problem Custom Title"></td>
+                    <td><button class="btn btn-default" type="button" onclick="del_prob(this)">删除</button></td>
+                    <td><input class="form-control" type="text" name="problem_id" pattern="[0-9]+" required onchange="check_prob(this)" value="{{p.problem.pk}}" placeholder="Problem ID" autocomplete="off"></td>
+                    <td><input class="form-control" type="text" name="problem_title_custom" value="{{p.problem.title}}" placeholder="Problem Custom Title"></td>
                     <td><span class="problem_title">{{p.title}}</span></td>
-                    <td><input type="text" name="problem_score_custom" value="{{p.score}}"></td>
+                    <td><input class="form-control" type="text" name="problem_score_custom" value="{{p.score}}" pattern="[0-9]+" required></td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -85,14 +85,14 @@
             $("#problem_table").find("button").attr("disabled", "disabled");
         {% endif %}
         function add_prob(pid, ptitle) {
-            var prob_h = "<tr class=\"prob_element\">"
-                + "<td><button class=\"btn\" type=\"button\" onclick=\"del_prob(this)\">删除</button></td>"
-                + "<td><input type=\"text\" name=\"problem_id\" onchange=\"check_prob(this)\" value=\""
-                + pid + "\" placeholder=\"Problem ID\" autocomplete=\"off\"></td>"
-                + "<td><input type=\"text\" name=\"problem_title_custom\" value=\""
-                + ptitle + "\" placeholder=\"Problem Custom Title\"></td>"
-                + "<td><span class=\"problem_title\">"
-                + ptitle + "</span></td><td><input type=\"text\" name=\"problem_score_custom\"></td></tr>";
+            var prob_h = '<tr class="prob_element">'
+                + '<td><button class="btn btn-default" type="button" onclick="del_prob(this)">删除</button></td>'
+                + '<td><input class="form-control" type="text" name="problem_id" pattern="[0-9]+" required onchange="check_prob(this)" value="'
+                + pid + '" placeholder="Problem ID" autocomplete="off"></td>'
+                + '<td><input class="form-control" type="text" name="problem_title_custom" value="'
+                + ptitle + '" placeholder="Problem Custom Title"></td>'
+                + '<td><span class="problem_title">'
+                + ptitle + '</span></td><td><input class="form-control" type="text" name="problem_score_custom" value="100" pattern="[0-9]+" required></td></tr>';
             $("#problem_table").append(prob_h);
         }
         function del_prob(pid){
