@@ -1,0 +1,33 @@
+{% extends "site_base.html" %}
+
+{% block head_title %}公告|{{ announcement.title }}{% endblock %}
+
+{% block body_base %}
+
+    <div class="container">
+        <h1>{{ announcement.title }}</h1>
+        <p style="opacity: 0.7;"><a class="btn btn-default btn-sm" href=".."><span class="glyphicon glyphicon-chevron-left"></span>返回</a>&nbsp;
+            {{ announcement.author.profile.nickname }}&nbsp;发表于&nbsp;{{ announcement.create_time }}，最后由
+            {{ announcement.last_update_user.profile.nickname }}&nbsp;修改于&nbsp;{{ announcement.update_time }}</p>
+        <hr />
+        <div id="content-div">{{ announcement.content }}</div>
+
+        <hr />
+        {% if user.is_staff %}
+            <p><a class="btn btn-default" href="{% url 'announcement:update' pk=pk %}">修改</a>&nbsp;&nbsp;
+                <a class="btn btn-danger" href="{% url 'announcement:delete' pk=pk %}">删除</a></p>
+        {% endif %}
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ STATIC_URL }}js/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}editormd/lib/marked.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            contentDiv = $('#content-div');
+            contentDiv.html(marked(contentDiv.text()))
+        })();
+    </script>
+{% endblock %}

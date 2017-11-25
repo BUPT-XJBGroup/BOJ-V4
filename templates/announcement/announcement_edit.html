@@ -1,0 +1,18 @@
+{% extends "site_base.html" %}
+
+{% load bootstrap %}
+
+{% block head_title %}添加公告{% endblock %}
+
+{% block body_base %}
+
+    <div class="container">
+        <h1>添加公告</h1>
+        <form method="post" action="">
+            {{ form|bootstrap }}
+            {% csrf_token %}
+            <input class="btn btn-primary" type="submit" value="发布" />
+        </form>
+    </div>
+
+{% endblock %}

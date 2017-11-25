@@ -36,6 +36,7 @@ urlpatterns = [
     url(r"^filer/", include("filer.urls")),
     url(r'^avatar/', include('avatar.urls')),
     url(r"^api/", include(router.urls)),
+    url(r"^announcement/", include("announcement.urls", namespace="announcement")),
     url(r"^api-auth/", include('rest_framework.urls', namespace="rest_framework")),
     url(r'^', include('filer.server.urls')),
 ]
