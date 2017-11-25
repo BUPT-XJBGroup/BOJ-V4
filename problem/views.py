@@ -306,7 +306,7 @@ class ProblemUpdateView(UpdateView):
             'sample_in': sample_in,
             'sample_out': sample_out,
         })
-        self.object.superadmin = self.request.user
+        # self.object.superadmin = self.request.user
         self.object.save()
         return super(ProblemUpdateView, self).form_valid(form)
 
