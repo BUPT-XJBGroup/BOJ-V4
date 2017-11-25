@@ -24,11 +24,15 @@
         </div>
     </section>
     <div class="container">
-        <h3><a href="{% url 'announcement:list' %}">公告</a></h3>
-        <hr />
+        <h3>公告 <span class="small"><a href="{% url 'announcement:list' %}">查看全部</a></span></h3>
         <section>
             <ul>
-                
+                {% for item in announcements %}
+                    <li>
+                        {% if item.is_sticky %}<span class="label label-danger">置顶</span>{% endif %}
+                        <a href="{% url 'announcement:view' pk=item.pk %}">{{ item.title }}</a>
+                    </li>
+                {% endfor %}
             </ul>
         </section>
     </div>

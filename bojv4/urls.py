@@ -10,6 +10,7 @@ from problem.views import FileViewSet
 from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
 from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
+from .views import HomepageView
 
 
 router = routers.DefaultRouter()
@@ -25,7 +26,7 @@ router.register(r'submissions', SubmissionViewSet)
 router.register(r'contest', ContestViewSet)
 
 urlpatterns = [
-    url(r"^$", TemplateView.as_view(template_name="homepage.html"), name="home"),
+    url(r"^$", HomepageView.as_view(), name="home"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^accounts/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
