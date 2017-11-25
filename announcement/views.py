@@ -3,6 +3,7 @@ from django.views.generic import TemplateView, FormView, DeleteView, UpdateView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
 from .models import Announcement
 from .forms import AnnouncementForm
 from django.shortcuts import redirect
@@ -39,7 +40,7 @@ class AnnouncementAddView(FormView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_staff:
             return super(AnnouncementAddView, self).dispatch(request, *args, **kwargs)
-        return HttpResponse(status=403)
+        raise PermissionDenied
 
     def get_context_data(self, **kwargs):
         return super(AnnouncementAddView, self).get_context_data(**kwargs)
@@ -57,28 +58,30 @@ class AnnouncementAddView(FormView):
 
 class AnnouncementUpdateView(UpdateView):
     template_name = "announcement/announcement_edit.html"
-    # form_class = AnnouncementForm
+    form_class = AnnouncementForm
     model = Announcement
-    fields = ['title', 'content', 'is_sticky']
+    # fields = ['title', 'content', 'is_sticky']
     success_url = ".."
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_staff:
             return super(AnnouncementUpdateView, self).dispatch(request, *args, **kwargs)
-        return HttpResponse(status=403)
+        raise PermissionDenied
 
-    # def get_context_data(self, **kwargs):
-    #     return super(AnnouncementUpdateView, self).get_context_data(**kwargs)
-    #
-    # def form_valid(self, form):
-    #     announcement = Announcement.objects.get(pk=int(self.kwargs['pk']))
-    #     announcement.title = form.cleaned_data['title']
-    #     announcement.content = form.cleaned_data['content']
-    #     announcement.is_sticky = form.cleaned_data['is_sticky']
-    #     announcement.last_update_user = self.request.user
-    #     announcement.save()
-    #     return redirect(resolve_url('announcement:view', pk=announcement.pk))
+    def get_context_data(self, **kwargs):
+        return super(AnnouncementUpdateView, self).get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        announcement = Announcement.objects.get(pk=int(self.kwargs['pk']))
+        announcement.title = form.cleaned_data['title']
+        announcement.content = form.cleaned_data['content']
+        announcement.is_sticky = form.cleaned_data['is_sticky']
+        announcement.last_update_user = self.request.user
+        announcement.save()
+        return redirect(resolve_url('announcement:view', pk=announcement.pk))
+
+
 
 
 class AnnouncementDeleteView(DeleteView):
@@ -90,5 +93,5 @@ class AnnouncementDeleteView(DeleteView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_staff:
             return super(AnnouncementDeleteView, self).dispatch(request, *args, **kwargs)
-        return HttpResponse(status=403)
+        raise PermissionDenied
 
