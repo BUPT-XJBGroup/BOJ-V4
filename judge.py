@@ -39,16 +39,14 @@ class NsqQueue(object):
 
 def submission_handler(message):
     connection.close()
-    logger.error("message.body: %s", message.body)
+    logger.info("message.body: %s", message.body)
     mp = json.loads(message.body)
     # print json.dumps(mp, indent=4)
     sub_pk = mp.get('submission-id', None)
     is_contest = mp.get('submission-type', 'contest')
     if is_contest == 'contest':
-        logger.error("contest submission")
         sub = ContestSubmission.objects.filter(pk=sub_pk).first()
     else:
-        logger.error("normal submission")
         sub = NormalSubmission.objects.filter(pk=sub_pk).first()
     status = mp.get('status', None)
     if not sub or not status or status not in conf.STATUS_CODE.keys():
@@ -70,10 +68,12 @@ def submission_handler(message):
         except Exception as ex:
             logger.error("result error: ", ex)
     else:
+        logger.info("==========================save status, wrong=========================")
         if 'compile-message' in mp:
             sub.set_info('compile-message', mp['compile-message'])
         sub.status = status
         sub.save()
+        logger.info("==========================save status, end=========================")
     logger.info("judge end")
     return True
 

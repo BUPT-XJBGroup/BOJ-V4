@@ -206,7 +206,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'judge_handler': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': '/var/log/oj/judge.log',
             'maxBytes': 1024*1024*5,
