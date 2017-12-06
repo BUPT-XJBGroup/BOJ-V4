@@ -35,6 +35,7 @@ def change_perm(func, instance):
             if ans.superadmin:
                 func('ojuser.change_groupprofile', ans.superadmin, des)
                 func('ojuser.view_groupprofile', ans.superadmin, des)
+                func('ojuser.delete_groupprofile', ans.superadmin, des)
             func('ojuser.change_groupprofile', ans.admin_group, des)
             func('ojuser.view_groupprofile', ans.admin_group, des)
             if des.superadmin:
