@@ -23,7 +23,7 @@ class UserProfilesForm(forms.ModelForm):
 
     class Meta:
         model = UserProfile
-        exclude = ['user', ]
+        exclude = ['user', 'is_teacher']
 
 """
 class GroupSearchWidget(ModelSelect2Widget):

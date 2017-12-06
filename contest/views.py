@@ -101,8 +101,10 @@ class ContestViewSet(ModelViewSet):
                 _(u'考试已结束')
             )
             return Response({'code': -1})
-
-        send_to_nsq('submit', json.dumps(request.data))
+        judgeRequest = request.data.dict()
+        judgeRequest['user'] = request.user.id
+        # send_to_nsq('submit', json.dumps(request.data))
+        send_to_nsq('submit', json.dumps(judgeRequest))
         messages.add_message(
             self.request._request,
             messages.SUCCESS,

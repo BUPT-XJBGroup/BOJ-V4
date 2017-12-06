@@ -32,12 +32,12 @@
 	  <li>没有上级</li>
       {% endfor %}
 	</ul>
-    <h4>没有下级</h4>
+    <h4>下级组</h4>
     <ul>
       {% for profile in children %}
       <li><a href="{%url 'mygroup-detail' profile.pk %}">{{ profile.nickname }}</a></li>
       {% empty %}
-      <li>No child yet.</li>
+      <li>没有下级</li>
       {% endfor %}
     </ul>
       {% if "change_groupprofile" in object_perms %}

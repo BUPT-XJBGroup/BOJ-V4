@@ -38,6 +38,8 @@ class ProblemChangePermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, Problem):
             return False
+        if request.user.is_superuser:
+            return True
         groups = obj.groups.all()
         for g in groups:
             if request.user.has_perm('ojuser.change_groupprofile', g):
@@ -181,6 +183,8 @@ class ProblemDataView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.profile.is_teacher:
+            raise PermissionDenied
         return super(ProblemDataView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -237,7 +241,7 @@ class ProblemCreateView(CreateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not request.user.is_staff and not request.user.profile.is_teacher:
             raise PermissionDenied
         return super(ProblemCreateView, self).dispatch(request, *args, **kwargs)
 
@@ -294,6 +298,8 @@ class ProblemUpdateView(UpdateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
+        if not request.user.is_staff and not request.user.profile.is_teacher:
+            raise PermissionDenied
         return super(ProblemUpdateView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -389,8 +395,12 @@ class FileCreateView(CreateView):
     fields = "__all__"
     template_name = 'problem/problemdata_form.html'
 
-    @method_decorator(staff_member_required)
+    # @method_decorator(staff_member_required)
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.profile.is_teacher:
+            raise PermissionDenied
+
         l = len(request.FILES.items())
         if l > 0:
             f = request.FILES.items()[0]
@@ -423,6 +433,12 @@ class FileCreateView(CreateView):
 
 class FileDeleteView(DeleteView):
     model = File
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.profile.is_teacher:
+            raise PermissionDenied
+        return super(FileDeleteView, self).dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

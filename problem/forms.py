@@ -34,6 +34,8 @@ class ProblemForm(forms.ModelForm):
             )
         }
 
+
+
     def __init__(self, *args, **kwargs):
         super(ProblemForm, self).__init__(*args, **kwargs)
         self.fields['title'].label = u"题目"

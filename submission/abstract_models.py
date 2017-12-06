@@ -107,6 +107,7 @@ class AbstractSubmission(models.Model):
         }
 
         # Temporary special time limit mercy (?) for java
+        # TODO: Remove this
         if self.language == 'JAVA8':
             req['time_limit'] *= 2
 
