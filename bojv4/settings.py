@@ -155,6 +155,7 @@ INSTALLED_APPS = [
     "common",
     "contest",
     "cheat",
+    "announcement",
 ]
 
 # A sample logging configuration. The only tangible logging
@@ -241,7 +242,7 @@ FIXTURE_DIRS = [
 #  ==================
 ACCOUNT_OPEN_SIGNUP = True
 ACCOUNT_EMAIL_UNIQUE = True
-ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = True
+ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = False
 ACCOUNT_LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
