@@ -2,7 +2,6 @@
 {% block head_title %}{{ contest.title }}{% endblock %}
 {% block body %}
 <div class="page-header">
-    <Meta http-equiv="Refresh" Content="50;">
     {%if is_admin %}
     {%if contest.ended == 1 %}<a class="btn btn-inverse pull-right" href="{% url 'cheat:record-list' contest.pk %}">代码查重</a>{%endif%}
     <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
@@ -10,7 +9,6 @@
     {%else%}
     <a class="btn btn-primary pull-right" href="{% url 'contest:add-question' contest.pk %}">添加提问</a>
     {%endif%}
-
     {% block contest_title %}
     <h1>{{ contest.title }}
         <small>{% if contest.ended == 1 %}已结束{% elif contest.ended == 0 %}进行中{% else %}未开始{% endif %}</small>
@@ -38,13 +36,13 @@
         {%if contest.description%}<br><br><span class="kari-head-info"><strong>测验描述 </strong>{{ contest.desc|safe }}</span>{%endif%}
     </div>
     <div class="kari-head-info">
-        <span class="kari-head-info"><strong>当前时间 </strong><span class="clock">{% now "Y-m-d H:i:s" %}</span></span>
+        <span class="kari-head-info"><strong>当前时间 </strong><span class="clock">{{ contest.server_time }}</span></span>
         <span class="kari-head-info"><strong>开始时间 </strong>{{ contest.start_time|date:"Y-m-d H:i:s" }}</span>
         <span class="kari-head-info"><strong>总长 </strong>{{ contest.length }} 分钟</span>
-        <span class="kari-head-info"><strong>剩余 </strong>{{ contest.time_left }} 分钟</span>
+        <span class="kari-head-info"><strong>剩余 </strong><span style="margin-right:0;" class="leftTime"></span></span>
     </div>
     <div class="row">
-        <div class="progress span12"><div class="progress-bar" style="width:{{ contest.time_passed_precent }}%"></div></div>
+        <div class="progress span12"><div class="progress-bar"></div></div>
     </div>
 </div>
     <div class="container" id="wrapper">
@@ -52,7 +50,65 @@
   </div>
     <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
     <script src="{{ STATIC_URL }}js/plugins/jquery-ui/jquery-ui.min.js"></script>
-    {% block script_extra %} {% endblock %}
+    <script>
+        Date.prototype.format = function(format) {
+            var o = {
+                "M+" : this.getMonth() + 1,// month
+                "d+" : this.getDate(),// day
+                "h+" : this.getHours(),// hour
+                "m+" : this.getMinutes(),// minute
+                "s+" : this.getSeconds(),// second
+                "q+" : Math.floor((this.getMonth() + 3) / 3),// quarter
+                "S" : this.getMilliseconds()
+            // millisecond
+            };
+            if (/(y+)/.test(format) || /(Y+)/.test(format)) {
+                format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            }
+            for ( var k in o) {
+                if (new RegExp("(" + k + ")").test(format)) {
+                    format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+                }
+            }
+            return format;
+        };
+        function formatSeconds(sec) {
+            var mm = parseInt(sec%3600/60);
+            var ss = sec%60;
+            return "" + parseInt(sec/3600) + ":" + (mm<10?"0":"") + mm + ":" +  (ss<10?"0":"") + ss;
+        }
+
+        var timestamp = {{ contest.server_time }}*1000;//毫秒
+        var updateTime = function(){
+            $('.clock').html(new Date(timestamp).format("yyyy-MM-dd hh:mm:ss"));
+            timestamp+=1000;
+            return updateTime;
+        }
+        setInterval(updateTime(), 1000);
+
+
+        var leftTime = {{ contest.time_left }};//秒
+        var totTime = {{ contest.length }}*60; //秒
+        var updateLeftTime = function() {
+            if (leftTime >= 0) {
+                $('.leftTime').html(formatSeconds(leftTime));
+                $('.progress-bar').width((1-leftTime/totTime)*100+"%");
+            }
+            else {
+                alert("比赛已结束！");
+                location.reload();
+            }
+            if (leftTime > 0) --leftTime;
+            return updateLeftTime;
+        }
+        if(leftTime>0){
+            setInterval(updateLeftTime(), 1000);
+        }else{
+            $('.leftTime').html(formatSeconds(0));
+            $('.progress-bar').width("100%");
+        }
+    </script>
+    {% block script_extra %}{% endblock %}
 {% endblock %}
 
 

@@ -4,6 +4,7 @@ from ojuser.models import GroupProfile
 from submission.abstract_models import AbstractSubmission
 from problem.models import Problem
 from bojv4 import conf
+import time
 from datetime import datetime, timedelta
 # Create your models here.
 
@@ -49,13 +50,17 @@ class Contest(models.Model):
     def get_date_time(self):
         return self._start_time.date(), self._start_time.time()
 
+    def server_time(self):
+        dtime = datetime.now()
+        return time.mktime(dtime.timetuple())
+
     def time_left(self):
         now = datetime.now()
         if now < self._start_time:
             return self.length
         if now > self._start_time + timedelta(minutes=self.length):
             return 0
-        return int((self._start_time + timedelta(minutes=self.length) -now).total_seconds()/60)
+        return int((self._start_time + timedelta(minutes=self.length) -now).total_seconds())
 
     def time_passed_precent(self):
         now = datetime.now()

@@ -9,8 +9,7 @@ from .models import Contest, ContestProblem, Submission, Notification, Clarifica
 from .filters import ContestFilter, SubmissionFilter
 from .tables import ContestTable, NotificationTable, ClarificationTable, SubmissionTable
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
-from .serializers import ContestSubmissionSerializer
-
+from .serializers import ContestSerializer
 from problem.models import Problem
 from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
 from common.nsq_client import send_to_nsq
@@ -90,7 +89,7 @@ def check_permission(user, contest):
 class ContestViewSet(ModelViewSet):
     queryset = Contest.objects.all()
     permission_classes = (IsAuthenticated, ContestViewPermission)
-    serializer_class = ContestSubmissionSerializer
+    serializer_class = ContestSerializer
 
     @detail_route(methods=['post'], url_path='submit')
     def submit(self, request, pk=None):
