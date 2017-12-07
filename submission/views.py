@@ -53,7 +53,7 @@ class SubmissionListView(ListView):
     def get_queryset(self):
         groups = get_objects_for_user(self.user, 'ojuser.view_groupprofile', GroupProfile)
         res = Problem.objects.filter(groups__in=groups).all()
-        ans = Submission.objects.filter(problem__groups__in=groups).order_by('-pk')
+        ans = Submission.objects.filter(problem__groups__in=groups).order_by('-pk').distinct()
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=ans,
