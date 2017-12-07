@@ -43,18 +43,16 @@
               <label>输出样例</label><br>
               <textarea rows="40" cols="10" name="sample_out" class="input-mini" style="width: 200px; height: 200px;">{{ object.sample_out }}</textarea>
           </div>
+
           <div class="form-group">
-              <input class="submit" type="submit" value="保存修改">
+               <a href="{% url 'problem:upload-new' object.pk%}" onclick="return leave();" class="btn btn-default">数据</a>
+              <input class="btn btn-default submit" type="submit" value="保存修改">
           </div>
           <input type="hidden" name="_tta" value="37">
       </form>
   </div>
 
     <style>
-        .form-group input{
-            width: 250px;
-            height: 45px;
-        }
 
         .form-group.selection span{
             height: 30px;
@@ -100,6 +98,12 @@
                  */
             });
         });
+        function leave() {
+            if (confirm("确定不保存就离开页面吗？")) {
+                return true;
+            }
+            return false;
+        }
     </script>
 </section>
 {% endblock %}
