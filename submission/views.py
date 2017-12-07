@@ -127,7 +127,9 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         if not self.problem or not self.problem.view_by_user(request.user):
             raise PermissionDenied
         if not self.problem.is_checked:
-            return HttpResponseForbidden()
+            raise PermissionDenied
+        if self.problem.forbid(request.user):
+            raise PermissionDenied
         self.user = request.user
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 

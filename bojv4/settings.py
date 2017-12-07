@@ -228,7 +228,7 @@ LOGGING = {
         },
         "judge": {
             "handlers": ["judge_handler"],
-            "level": "ERROR",
+            "level": "INFO",
             "propagate": True,
         }
     }

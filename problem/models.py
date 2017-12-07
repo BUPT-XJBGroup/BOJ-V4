@@ -9,6 +9,7 @@ from django.db import models
 from ojuser.models import GroupProfile
 from django.core.cache import cache
 from bojv4.settings import BASE_DIR
+from django.core.cache import cache
 
 #  from filer.fields.file import FilerFileField
 
@@ -18,6 +19,12 @@ class ProblemTag(models.Model):
 
 
 class Problem(models.Model):
+
+    FORBIDDEN_TIMEOUT = 24 * 3600 * 30
+    HITS_LIMIT = 30
+    SUBMIT_INTERVAL = 3600
+    
+
     title = models.CharField(max_length=50, default='Untitled')
     time_limit = models.IntegerField(default=1000)
     memory_limit = models.IntegerField(default=65536)
@@ -44,6 +51,20 @@ class Problem(models.Model):
                 return True
         return False
 
+    def forbid(self, user):
+        cache_key = str(self.pk) + "_forbid_" + user.username
+        hits = cache.get(cache_key)
+        if not hits:
+            cache.set(cache_key, 1, self.SUBMIT_INTERVAL)
+            return False
+        if hits == -1:
+            return True
+        cache.incr(cache_key, 1)
+        if hits > self.HITS_LIMIT:
+            cache.set(cache_key, -1, self.FORBIDDEN_TIMEOUT)
+            return True
+        return False
+        
     def description(self):
         if not hasattr(self, '_desc'):
             try:

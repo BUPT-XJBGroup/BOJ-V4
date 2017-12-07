@@ -14,11 +14,13 @@ sys.path.append(BASE_DIR)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'bojv4.settings'
 django.setup()
 
+from django.core.cache import cache
+from django.core.files.base import ContentFile
 from submission.abstract_models import NormalSubmission
 from contest.models import Submission as ContestSubmission
-from django.core.files.base import ContentFile
 from contest.models import ContestProblem
 from django.contrib.auth.models import User
+from bojv4.conf import SUBMIT_CACHE
 import logging
 logger = logging.getLogger('judge')
 
@@ -39,7 +41,7 @@ class NsqQueue(object):
 
 def submission_handler(message):
     connection.close()
-    logger.info("message.body: %s", message.body)
+    logger.info("message.id: %s, message.body: %s", message.id, message.body)
     mp = json.loads(message.body)
     # print json.dumps(mp, indent=4)
     sub_pk = mp.get('submission-id', None)
@@ -54,9 +56,9 @@ def submission_handler(message):
         return True
     position = mp.get('position', '')
     if position != '':
-        # CaseResult.deal_case_result(mp)
-        # cases = sub.get_info('cases')
         case = {}
+        if sub.status != 'JD':
+            time.sleep(2)
         case['position'] = int(position)
         case['time'] = int(mp.get('time', 0) * 1000)
         case['memory'] = mp.get('memory', 0)
@@ -67,8 +69,8 @@ def submission_handler(message):
             sub.save()
         except Exception as ex:
             logger.error("result error: ", ex)
+        logger.info("==========================save status, case=========================")
     else:
-        logger.info("==========================save status, wrong=========================")
         if 'compile-message' in mp:
             sub.set_info('compile-message', mp['compile-message'])
         sub.status = status
