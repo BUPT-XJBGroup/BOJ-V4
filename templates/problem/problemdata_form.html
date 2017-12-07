@@ -20,17 +20,32 @@
 {% block body_class %}home{% endblock %}
 
 {% block body %}
-<!-- The file upload form used as target for the file upload widget -->
+
+
+    <h3>上传数据</h3>
+     <div class="panel">
+     <div class="panel-body">
+    每一组数据的输入文件的后缀名必须为.in, 输出文件的后缀名必须为.out, 前缀必须相同。<br/>
+在添加文件的弹出框里可以一次选择多个文件， 然后点击开始上传。 系统会根据文件名自动识别输入数据与输出数据。<br/>
+如： test1.in, test1.out, test2.in, test2.out<br/>
+这四个文件组成了两组数据， 第一组数据的输入文件为test1.in， 输出文件为test1.out，<br/>
+第二组数据的输入文件为test2.in， 输出文件为test2.out<br />
+
+         <hr>
+    <!-- The file upload form used as target for the file upload widget -->
+
 <form id="fileupload" method="post" action="." enctype="multipart/form-data">{% csrf_token %}
   <!-- Redirect browsers with JavaScript disabled to the origin page -->
   <!--<noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
   <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-  <div class="row fileupload-buttonbar">
+
+    <div class="row fileupload-buttonbar">
+
     <div class="col-lg-7">
       <!-- The fileinput-button span is used to style the file input field as button -->
       <span class="btn btn-success fileinput-button">
         <i class="glyphicon glyphicon-plus"></i>
-        <span>添加文件.</span>
+        <span>添加文件</span>
         <input type="file" name="file" multiple>
       </span>
       <button type="submit" class="btn btn-primary start">
@@ -63,6 +78,7 @@
   <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
 
 </form>
+
 <!-- The blueimp Gallery widget -->
 <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
   <div class="slides"></div>
@@ -75,13 +91,19 @@
 </div>
 <div>
     <button class="btn btn-large btn-primary" onclick="check_data()">Finished</button>
-<p><h3>上传数据规则</h3>
-每一组数据的输入文件的后缀名必须为.in, 输出文件的后缀名必须为.out, 前缀必须相同。<br/>
-在添加文件的弹出框里可以一次选择多个文件， 然后点击开始上传。 系统会根据文件名自动识别输入数据与输出数据。<br/>
-如： test1.in, test1.out, test2.in, test2.out<br/>
-这四个文件组成了两组数据， 第一组数据的输入文件为test1.in， 输出文件为test1.out，<br/>
-第二组数据的输入文件为test2.in， 输出文件为test2.out
-<p>
+   </div>
+     </div>
+</div>
+
+    <h3>下载数据</h3>
+<div class="panel">
+<div class="panel-body">
+    下载题目当前输入输出文件数据。
+    <button class="btn btn-info" onclick="download_data()">
+        <i class="glyphicon glyphicon-download"></i>
+        <span>下载数据</span>
+    </button>
+</div>
 </div>
 {% endblock %}
 {% block extra_body %}
@@ -126,9 +148,9 @@
 <script src="{{ STATIC_URL }}jfu/js/cors/jquery.xdr-transport.js"></script>
 <![endif]-->
 <script>
-	var url = '/api/problems/' + {{ pid }} + '/check/';
+	var url = '/api/problems/' + {{ pid }};
 	function check_data() {
-		$.get(url, function(result) {
+		$.get(url+'/check/', function(result) {
 			if (result.code == 0) {
 				alert(result.msg);
 				location.href= "{% url 'problem:problem-data' pid %}";
@@ -138,6 +160,15 @@
 			}
 		});
 	}
+	function download_data() {
+        $.get(url+'/download/',function(result) {
+            if(result.code == 0){
+                location.href=result.url;
+            }else{
+                alert(result.msg);
+            }
+        });
+    }
 </script>
 
 {% endblock %}

@@ -10,6 +10,8 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.conf import settings
+import os,glob, zipfile
 
 import json
 import mimetypes
@@ -82,6 +84,24 @@ class ProblemViewSet(viewsets.ModelViewSet):
             logger.error(ex)
             return Response({'code': -1, 'msg': 'check data failed'})
         return Response({'code': 0, 'msg': 'Check Success !'})
+
+    @detail_route(methods=['get'], url_path='download')
+    def download_data(self, request, pk=None):
+        cases = self.get_object().cases
+        try:
+            filename = 'p' + pk + '_data.zip'
+            path = settings.PROJECT_ROOT + settings.STATIC_URL
+            for infile in glob.glob(os.path.join(path, '*.zip')):
+                os.remove(infile)
+            archive = zipfile.ZipFile(path + filename, 'w', zipfile.ZIP_DEFLATED)
+            for p in cases.all():
+                archive.write(p.input_data.path,p.input_name)
+                archive.write(p.output_data.path,p.output_name)
+            archive.close()
+        except Exception as ex:
+            logger.error(ex)
+            return Response({'code': -1, 'msg': 'download failed'})
+        return Response({'code': 0, 'url': settings.STATIC_URL + filename})
 
 
 class ScoreViewSet(viewsets.ModelViewSet):
@@ -331,8 +351,8 @@ class ProblemUpdateView(UpdateView):
         return form
 
     def get_success_url(self):
-        return reverse('problem:upload-new', args=[self.object.pk])
-
+        return reverse('problem:problem-detail', args = [self.object.pk])
+       # return reverse('problem:upload-new', args=[self.object.pk])
 
 class ProblemDeleteView(DeleteView):
     model = Problem
@@ -352,6 +372,7 @@ class ProblemDeleteView(DeleteView):
     @method_decorator(permission_required_or_403('delete_problem', (Problem, 'pk', 'pk')))
     def dispatch(self, request, *args, **kwargs):
         return super(ProblemDeleteView, self).dispatch(request, *args, **kwargs)
+
 
 #  =======================  problem datas  ===========================
 
@@ -430,7 +451,6 @@ class FileCreateView(CreateView):
         data = json.dumps(form.errors)
         return HttpResponse(content=data, status=400, content_type='application/json')
 
-
 class FileDeleteView(DeleteView):
     model = File
 
@@ -452,7 +472,6 @@ class FileDeleteView(DeleteView):
         response = JSONResponse(True, mimetype=response_mimetype(request))
         response['Content-Disposition'] = 'inline; filename=files.json'
         return response
-
 
 class FileListView(ListView):
     model = File

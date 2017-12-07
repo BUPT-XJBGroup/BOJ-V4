@@ -170,12 +170,12 @@ class ProblemCase(models.Model):
         return str(self.problem.pk) + ":" + str(self.pk)
 
     @property
-    def get_input_name(self):
+    def input_name(self):
         path = self.input_data.path
         return path[path.rfind('/') + 1:]
 
     @property
-    def get_output_name(self):
+    def output_name(self):
         path = self.output_data.path
         return path[path.rfind('/') + 1:]
 
