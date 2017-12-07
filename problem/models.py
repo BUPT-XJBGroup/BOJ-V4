@@ -20,7 +20,7 @@ class ProblemTag(models.Model):
 
 class Problem(models.Model):
 
-    FORBIDDEN_TIMEOUT = 24 * 3600 * 30
+    FORBIDDEN_TIMEOUT = 24 * 3600 * 60
     HITS_LIMIT = 30
     SUBMIT_INTERVAL = 3600
     
@@ -51,17 +51,25 @@ class Problem(models.Model):
                 return True
         return False
 
+    @classmethod
+    def is_forbid(cls, user):
+        forbid_key = 'forbid_submit_' + user.username
+        if cache.get(forbid_key):
+            return True
+        return False
+        
     def forbid(self, user):
         cache_key = str(self.pk) + "_forbid_" + user.username
         hits = cache.get(cache_key)
         if not hits:
             cache.set(cache_key, 1, self.SUBMIT_INTERVAL)
             return False
-        if hits == -1:
+        forbid_key = 'forbid_submit_' + user.username
+        if cache.get(forbid_key):
             return True
-        cache.incr(cache_key, 1)
+        cacohe.incr(cache_key, 1)
         if hits > self.HITS_LIMIT:
-            cache.set(cache_key, -1, self.FORBIDDEN_TIMEOUT)
+            cache.set(forbid_key, 1, self.FORBIDDEN_TIMEOUT)
             return True
         return False
         

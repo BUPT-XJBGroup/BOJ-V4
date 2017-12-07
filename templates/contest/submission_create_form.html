@@ -47,7 +47,7 @@ function submit() {
         else{
 			alert("error");
         }
-    }, "json");
+    }, "json").error(function() {location.reload()});
 }
 
 </script>
