@@ -67,7 +67,7 @@ class Problem(models.Model):
         forbid_key = 'forbid_submit_' + user.username
         if cache.get(forbid_key):
             return True
-        cacohe.incr(cache_key, 1)
+        cache.incr(cache_key, 1)
         if hits > self.HITS_LIMIT:
             cache.set(forbid_key, 1, self.FORBIDDEN_TIMEOUT)
             return True

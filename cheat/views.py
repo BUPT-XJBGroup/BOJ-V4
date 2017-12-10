@@ -39,7 +39,7 @@ class RecordListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(RecordListView, self).get_context_data(**kwargs)
         contests_table = RecordTable(self.get_queryset())
-        RequestConfig(self.request).configure(contests_table)
+        RequestConfig(self.request, paginate={'per_page': self.paginate_by}).configure(contests_table)
         #  add filter here
         context['records_table'] = contests_table
         context['filter'] = self.filter
@@ -60,7 +60,6 @@ class RecordDetailView(DetailView):
         return super(RecordDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        logger.warning('============test===============')
         context = super(RecordDetailView, self).get_context_data(**kwargs)
         context['code1'] = self.get_object().sub1.code
         context['code2'] = self.get_object().sub2.code
