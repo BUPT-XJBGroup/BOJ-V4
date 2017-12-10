@@ -127,6 +127,8 @@ class ContestViewSet(ModelViewSet):
                 _('Contest has not ended.')
             )
             return Response({'code': -1})
+        if not self.get_object().change_by_user(request.user):
+            raise PermissionDenied
 
         for p in self.get_object().problems.all():
             send_to_nsq('cheat', str(p.pk))
@@ -139,6 +141,8 @@ class ContestViewSet(ModelViewSet):
 
     @detail_route(methods=['get'], url_path='clear')
     def clear_record(self, request, pk=None):
+        if not self.get_object().change_by_user(request.user):
+            raise PermissionDenied
         for p in self.get_object().problems.all():
             p.cheat.all().delete()
         messages.add_message(

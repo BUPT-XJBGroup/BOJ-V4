@@ -84,10 +84,6 @@ class GroupListView(ListView):
         context['group_can_view'] = self.group_can_view_qs
         context['group_can_change'] = self.group_can_change_qs
         context['group_can_delete'] = self.group_can_delete_qs
-        rootGroup = GroupProfile.objects.filter(name='root').first()
-        if rootGroup and self.request.user.is_staff:
-            context['root_user'] = True
-            context['rootGroup'] = rootGroup
         tree_list = []
         for u in self.group_can_view_qs:
             p_name = '#'
@@ -267,9 +263,6 @@ class GroupDetailView(DetailView):
         #  add filter here
         context['group_users_table'] = group_users_table
         context['group_can_change'] = self.request.user.has_perm("ojuser.change_groupprofile", self.get_object())
-        rootGroup = GroupProfile.objects.filter(name='root').first()
-        if rootGroup and self.request.user.has_perm('ojuser.change_groupprofile', rootGroup):
-            context['root_user'] = True
         return context
 
 
@@ -378,7 +371,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'], url_path='bulk_create')
     def create_users(self, request):
-        # rootGroup = GroupProfile.objects.filter(name="root").first()
         if not request.user.is_staff:
             raise PermissionDenied
         mp = {}

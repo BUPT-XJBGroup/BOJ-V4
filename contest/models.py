@@ -32,6 +32,9 @@ class Contest(models.Model):
     def key(self):
         return 'contest__' + str(self.pk)
 
+    def change_by_user(self, user):
+        return user.has_perm('ojuser.change_groupprofile', self.group)
+
     @property
     def lang_limited(self):
         res = []
