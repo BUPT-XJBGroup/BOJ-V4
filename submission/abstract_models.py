@@ -31,6 +31,7 @@ class AbstractSubmission(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(AbstractSubmission, self).__init__(*args, **kwargs)
+        self._code = None
 
     def __unicode__(self):
         return str(self.pk)
@@ -84,12 +85,14 @@ class AbstractSubmission(models.Model):
 
     @property
     def code(self):
-        return self.code_file.file.read()
+        if self._code is None:
+            self._code =  self.code_file.file.read()
+        return self._code
 
     def get_id(self):
         return "None"
 
-    def get_submission_type():
+    def get_submission_type(self):
         return "default"
 
     def judge(self, code):
@@ -107,7 +110,7 @@ class AbstractSubmission(models.Model):
         }
 
         # Temporary special time limit mercy (?) for java
-        # TODO: Remove this
+        # TODO: Remove this and implement this by using "Time limit ratio" config of languages
         if self.language == 'JAVA8':
             req['time_limit'] *= 2
 
@@ -125,7 +128,7 @@ class AbstractSubmission(models.Model):
 
     def rejudge(self):
         self.set_info('cases', [])
-        self.judge()
+        self.judge(self.code)
 
     def add_case(self, case):
         cases = self.get_info('cases', [])
