@@ -37,4 +37,14 @@ class GroupProfile(MPTTModel):
     def __unicode__(self):
         return self.nickname + " [" + self.name + "]"
 
+    def change_by_user(self, user):
+        if not user:
+            return False
+        return user.has_perm("ojuser.change_groupprofile", self)
 
+    @classmethod
+    def exist_group_change_user(cls, pk, user):
+        group = cls.objects.get(pk=int(pk))
+        if not group or not group.change_by_user(user):
+            return False
+        return True

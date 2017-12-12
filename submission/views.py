@@ -96,7 +96,6 @@ class SubmissionDetailView(DetailView):
         return super(SubmissionDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        logger.warning('============test===============')
         status = self.object.get_status_display()
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status

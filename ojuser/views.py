@@ -22,7 +22,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import list_route, detail_route
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, BasePermission
 from django_tables2 import RequestConfig
 
 from .forms import UserProfileForm, UserProfilesForm
@@ -33,6 +33,7 @@ from .serializers import UserSerializer, UserProfileSerializer, \
 from .tables import GroupUserTable, GroupTable
 from .models import GroupProfile, UserProfile
 from .filters import GroupFilter
+from .utils import GroupChangePermission, can_change_group
 
 from guardian.shortcuts import get_objects_for_user
 from guardian.decorators import permission_required_or_403
@@ -148,10 +149,12 @@ class GroupUpdateView(TemplateView):
     template_name = 'ojuser/group_update_form.html'
 
     @method_decorator(permission_required_or_403(
-        'ojuser.delete_groupprofile',
+        'ojuser.change_groupprofile',
         (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
         return super(GroupUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -210,7 +213,7 @@ class UserDeleteView(DeleteView):
         self.group = GroupProfile.objects.get(pk=kwargs.get('group', -1))
         if not self.group or not user:
             raise PermissionDenied
-        if user == self.group.superadmin or not request.user.has_perm("ojuser.change_groupprofile", self.group):
+        if user == self.group.superadmin or not self.group.change_by_user(user):
             raise PermissionDenied
         self.user = user
         return super(UserDeleteView, self).dispatch(request, *args, **kwargs)
@@ -262,23 +265,21 @@ class GroupDetailView(DetailView):
         RequestConfig(self.request, paginate={'per_page': 35}).configure(group_users_table)
         #  add filter here
         context['group_users_table'] = group_users_table
-        context['group_can_change'] = self.request.user.has_perm("ojuser.change_groupprofile", self.get_object())
+        context['group_can_change'] = self.get_object().change_by_user(self.request.user)
         return context
 
-
 class GroupMemberView(TemplateView):
+# class GroupMemberView(DetailView):
+#    model = GroupProfile
     template_name = 'ojuser/group_members.html'
 
-    @method_decorator(permission_required_or_403(
-        'ojuser.change_groupprofile',
-        (GroupProfile, 'pk', 'pk')
-    ))
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(GroupMemberView, self).dispatch(request, *args, **kwargs)
 
-    def get_context_data(self, pk=None, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super(GroupMemberView, self).get_context_data(**kwargs)
-        context['pk'] = pk
+        context['pk'] = kwargs['pk']
         return context
 
 
@@ -286,6 +287,10 @@ class GroupResetView(DetailView):
     template_name = 'ojuser/reset_members.html'
     model = GroupProfile
 
+    @method_decorator(login_required)    
+    def dispatch(self, request, *args, **kwargs):
+        return super(GroupResetView, self).dispatch(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super(GroupResetView, self).get_context_data(**kwargs)
         group = context['object']
@@ -404,12 +409,11 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 class GroupProfileViewSet(viewsets.ModelViewSet):
     queryset = GroupProfile.objects.all()
     serializer_class = GroupProfileSerializer
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, GroupChangePermission]
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
-        qs = self.get_queryset()
-        group = get_object_or_404(qs, pk=pk)
+        group = get_object()
         if request.method == "POST" or request.method == "PUT":
             users = []
             errors = []
@@ -431,8 +435,7 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='reset')
     def reset_member(self, request, pk=None):
-        qs = self.get_queryset()
-        group = get_object_or_404(qs, pk=pk)
+        group = get_object()
         if request.method == "POST":
             users = []
             errors = []

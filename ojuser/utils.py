@@ -1,11 +1,14 @@
 from __future__ import unicode_literals
 
+from functools import wraps
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from guardian.compat import get_user_model
 from guardian.utils import get_group_obj_perms_model
 from guardian.utils import get_user_obj_perms_model
-
+from django.core.exceptions import PermissionDenied
+from rest_framework.permissions import BasePermission
+from .models import GroupProfile
 
 def get_users_with_perm(obj, perm, with_superusers=False,
                          with_group_users=True):
@@ -61,3 +64,26 @@ def get_users_with_perm(obj, perm, with_superusers=False,
     if with_superusers:
         qset = qset | Q(is_superuser=True)
     return get_user_model().objects.filter(qset).distinct()
+
+
+class GroupChangePermission(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        if not request.user.is_staff:
+            return False
+        return obj.change_by_user(request.user)
+
+
+def can_change_group(test_func=None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            if not GroupProfile.exist_group_change_user(int(kwargs['pk']), request.user):
+                raise PermissionDenied
+            return func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
