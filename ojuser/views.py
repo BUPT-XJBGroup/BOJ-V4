@@ -137,8 +137,8 @@ class GroupCreateView(TemplateView):
         all_admin = User.objects.filter(pk=self.request.user.pk).all()
         for g in admin_groups:
             all_admin |= g.user_set.all()
-        self.group_profile_form.fields['superadmin'].queryset = all_admin.distinct()
         self.group_profile_form.fields["parent"].queryset = groups
+        self.group_profile_form.fields['superadmin'].queryset = all_admin.distinct()
         self.group_admins_form.fields["admins"].queryset = all_user.distinct()
         context["group_profile_form"] = self.group_profile_form
         context["group_admins_form"] = self.group_admins_form
@@ -153,8 +153,6 @@ class GroupUpdateView(TemplateView):
         (GroupProfile, 'pk', 'pk')
     ))
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            raise PermissionDenied
         return super(GroupUpdateView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -172,15 +170,7 @@ class GroupUpdateView(TemplateView):
         self.pk = self.kwargs['pk']
         qs = GroupProfile.objects.all()
         self.object = get_object_or_404(qs, pk=self.pk)
-        my_children = self.object.get_descendants(include_self=True)
-        profiles_can_change = get_objects_for_user(
-            self.request.user,
-            'ojuser.change_groupprofile',
-            with_superuser=True
-        ).exclude(pk__in=my_children)
         self.group_profile_form = GroupProfileForm(instance=self.object)
-        self.group_profile_form.fields['parent'].queryset = profiles_can_change
-        self.group_profile_form.fields['parent'].widget.queryset = profiles_can_change
         user_queryset = User.objects.filter(pk__in=self.object.user_group.user_set.all())
         self.group_admins_form = GroupForm(instance=self.object.admin_group)
         self.group_admins_form.fields['admins'].widget.queryset = user_queryset

@@ -101,6 +101,7 @@ class GroupProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(GroupProfileForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
-            my_children = self.instance.get_descendants(include_self=True)
-            self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
+            # my_children = self.instance.get_descendants(include_self=True)
+            self.fields.pop('parent')
+            # self.fields['parent'].queryset = GroupProfile.objects.all().exclude(pk__in=my_children)
 
