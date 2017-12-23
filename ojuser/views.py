@@ -203,8 +203,9 @@ class UserDeleteView(DeleteView):
         self.group = GroupProfile.objects.get(pk=kwargs.get('group', -1))
         if not self.group or not user:
             raise PermissionDenied
-        if user == self.group.superadmin or not self.group.change_by_user(user):
-            raise PermissionDenied
+        if self.group.change_by_user(user):
+            if not request.user.is_superuser and request.user != self.group.superadmin:
+                raise PermissionDenied
         self.user = user
         return super(UserDeleteView, self).dispatch(request, *args, **kwargs)
 
@@ -403,7 +404,7 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
-        group = get_object()
+        group = self.get_object()
         if request.method == "POST" or request.method == "PUT":
             users = []
             errors = []
@@ -425,7 +426,7 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='reset')
     def reset_member(self, request, pk=None):
-        group = get_object()
+        group = self.get_object()
         if request.method == "POST":
             users = []
             errors = []
