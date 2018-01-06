@@ -371,20 +371,14 @@ class SubmissionListView(ListView):
 
     def get_queryset(self):
         queryset = None
-        users = User.objects.filter(pk=self.request.user.pk).all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             queryset = Submission.objects.filter(problem__contest=self.contest).all()
-            groups = self.contest.group.get_descendants(include_self=True)
-            for g in groups:
-                users |= g.admin_group.user_set.all()
-                users |= g.user_group.user_set.all()
         else:
             queryset = Submission.objects.filter(problem__contest=self.contest, user=self.request.user).all()
         self.filter = SubmissionFilter(
             self.request.GET,
             queryset=queryset,
             problems=self.contest.problems.all(),
-            users=users.distinct()
         )
         return self.filter.qs.order_by('-pk')
 

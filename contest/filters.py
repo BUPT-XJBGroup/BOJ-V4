@@ -15,19 +15,17 @@ class SubmissionFilter(django_filters.FilterSet):
     language = django_filters.ChoiceFilter(choices=LANGUAGE.choice(), label=u'语言')
     problem = django_filters.ModelChoiceFilter(queryset=(('A', 'A'),), label=u'题目')
     status = django_filters.ChoiceFilter(choices=STATUS_CODE.choice(), label='状态')
-    user = django_filters.ModelChoiceFilter(queryset=User.objects.all(), label=u'用户')
+    user__username = django_filters.CharFilter(name='user__username', label=u'用户')
 
     def __init__(self, *args, **kwargs):
         self.problems = kwargs.pop('problems')
-        self.users = kwargs.pop('users')
         super(SubmissionFilter, self).__init__(*args, **kwargs)
         self.filters.get('problem').queryset=self.problems
-        self.filters.get('user').queryset=self.users
 
 
     class Meta:
         model = Submission
-        fields = ['pk', 'problem', 'language', 'status', 'user']
+        fields = ['pk', 'problem', 'language', 'status', 'user__username']
         order_by = 'desc'
 
 

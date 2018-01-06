@@ -16,6 +16,7 @@ from django.http import Http404, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models.query import EmptyQuerySet
 from rest_framework.permissions import BasePermission
@@ -127,8 +128,6 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
             raise PermissionDenied
         if not self.problem.is_checked:
             raise PermissionDenied
-        if self.problem.forbid(request.user):
-            raise PermissionDenied
         self.user = request.user
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 
@@ -143,6 +142,9 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        if self.problem.forbid(self.request.user):
+            raise PermissionDenied        
+
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user

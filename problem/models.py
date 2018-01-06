@@ -22,7 +22,7 @@ class Problem(models.Model):
 
     FORBIDDEN_TIMEOUT = 24 * 3600 * 60
     HITS_LIMIT = 30
-    SUBMIT_INTERVAL = 3600
+    SUBMIT_INTERVAL = 300
     
 
     title = models.CharField(max_length=50, default='Untitled')
