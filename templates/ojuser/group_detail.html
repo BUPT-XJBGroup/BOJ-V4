@@ -56,9 +56,11 @@
         <a href="{% url 'mygroup-update' object.pk %}" class="btn btn-large btn-primary">更改组信息</a>
         {% if "delete_groupprofile" in object_perms  and request.user.is_staff %}
         <a href="{% url 'mygroup-add-member' object.pk %}" class="btn btn-large btn-primary">添加组员</a>
-        <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">重置密码</a>
         {% endif %}
     </div>
+  {% endif %}
+  {% if can_reset_password %}
+    <a href="{% url 'mygroup-reset-password' object.pk %}" class="btn btn-large btn-primary">重置密码</a>
   {% endif %}
 </section>
 {% endblock %}

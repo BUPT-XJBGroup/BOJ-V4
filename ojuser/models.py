@@ -42,6 +42,9 @@ class GroupProfile(MPTTModel):
             return False
         return user.has_perm("ojuser.change_groupprofile", self)
 
+    def can_reset_member_password_by_user(self, user):
+        return user.is_superuser or user.is_staff or user == self.superadmin
+
     @classmethod
     def exist_group_change_user(cls, pk, user):
         group = cls.objects.get(pk=int(pk))

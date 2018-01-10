@@ -257,6 +257,7 @@ class GroupDetailView(DetailView):
         #  add filter here
         context['group_users_table'] = group_users_table
         context['group_can_change'] = self.get_object().change_by_user(self.request.user)
+        context['can_reset_password'] = self.get_object().can_reset_member_password_by_user(self.request.user)
         return context
 
 class GroupMemberView(TemplateView):
@@ -280,6 +281,9 @@ class GroupResetView(DetailView):
 
     @method_decorator(login_required)    
     def dispatch(self, request, *args, **kwargs):
+        group = GroupProfile.objects.get(pk=self.kwargs['pk'])
+        if not group.can_reset_member_password_by_user(request.user):
+            raise PermissionDenied
         return super(GroupResetView, self).dispatch(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
@@ -404,6 +408,8 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
+        if not request.user.is_staff:
+            raise PermissionDenied
         group = self.get_object()
         if request.method == "POST" or request.method == "PUT":
             users = []
@@ -427,6 +433,8 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
     @detail_route(methods=['post', 'get', 'put', ], url_path='reset')
     def reset_member(self, request, pk=None):
         group = self.get_object()
+        if not group.can_reset_member_password_by_user(request.user):
+            raise PermissionDenied
         if request.method == "POST":
             users = []
             errors = []

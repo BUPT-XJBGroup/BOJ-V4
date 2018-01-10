@@ -37,12 +37,12 @@
     <div class="row">
       <div class="col-lg-2">
         <div class="input-group">
-          <span class="input-group-btn">
-            <button id="btn-select" class="btn btn-warning btn-sm" type="button">Select All</button>
-          </span>
-          <span class="input-group-btn">
-            <button id="btn-cancel" class="btn btn-info btn-sm" type="button">Cancel All</button>
-          </span>
+{#          <span class="input-group-btn">#}
+{#            <button id="btn-select" class="btn btn-warning btn-sm" type="button">Select All</button>#}
+{#          </span>#}
+{#          <span class="input-group-btn">#}
+{#            <button id="btn-cancel" class="btn btn-info btn-sm" type="button">Cancel All</button>#}
+{#          </span>#}
         </div>
       </div>
       <div class="col-lg-offset-1">
@@ -84,12 +84,12 @@
         }
       });
     });
-    $("#btn-select").click(function(){
-		$("input[name='select_checked']:checkbox").prop("checked", true); 
-    });
-    $("#btn-cancel").click(function(){
-		$("input[name='select_checked']:checkbox").prop("checked", false); 
-    });
+    // $("#btn-select").click(function(){
+	// 	$("input[name='select_checked']:checkbox").prop("checked", true);
+    // });
+    // $("#btn-cancel").click(function(){
+	// 	$("input[name='select_checked']:checkbox").prop("checked", false);
+    // });
   });
 </script>
 {% endblock %}

@@ -71,8 +71,6 @@ class GroupChangePermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
-        if not request.user.is_staff:
-            return False
         return obj.change_by_user(request.user)
 
 
