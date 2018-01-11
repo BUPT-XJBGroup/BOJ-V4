@@ -19,7 +19,7 @@ class ContestForm(forms.ModelForm):
                 'class':'input-block-level',
                 'placeholder':'Contest Description'}))
 
-    start_date = forms.DateField(initial=date.today()+timedelta(days=1), label=u'开始日期',
+    start_date = forms.DateField(initial=lambda : date.today()+timedelta(days=1), label=u'开始日期',
             widget=forms.DateInput(format='%Y-%m-%d', attrs={
                 'class':'input-small',
                 'placeholder':'YYYY-MM-DD'}))
