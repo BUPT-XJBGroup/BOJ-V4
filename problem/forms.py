@@ -15,6 +15,13 @@ class ProblemForm(forms.ModelForm):
                     'name__icontains',
                     'nickname__icontains',
                 ]))
+    groups = forms.ModelMultipleChoiceField(required=True, queryset=GroupProfile.objects.all(),
+                                            widget=ModelSelect2MultipleWidget(
+                                                search_fields=[
+                                                    'name__icontains',
+                                                    'nickname__icontains'
+                                                ]
+                                            ))
 
     class Meta:
         model = Problem
