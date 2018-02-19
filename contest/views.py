@@ -166,23 +166,45 @@ class ContestViewSet(ModelViewSet):
     @detail_route(methods=['get'], url_path='board')
     def get_contest_board(self, request, pk=None):
         group_id = request.GET.get('group_id', None)
+        real_time = request.GET.get('real_time', 0) > 0
+
         contest = self.get_object()
-        lock = str(contest.pk) + "__lock"
+
+        # Get users who have permission change_groupprofile to the current contest's group
+        admins = set(get_users_with_perm(contest.group, 'change_groupprofile', True, True))
+
+        # Only admin can view the real_time board
+        if real_time and not request.user in admins:
+            # The 2 is from bojv4/conf.py: CONTEST_TYPE
+            # TODO: Don't use hardcoded literal "2"
+            # but I think maybe this is already enough
+            if contest.ended() == 0 or contest.contest_type == 2:
+                raise PermissionDenied
+
+        rt_prefix = "__rt" if real_time else ""
+        lock = str(contest.pk) + rt_prefix + "__lock"
+        cache_key = contest.key() + rt_prefix
         if cache.get(lock):
-            res = cache.get(contest.key())
+            res = cache.get(cache_key)
             return Response(self.get_board_from_cache(group_id, res))
         cache.set(lock, 1, CONTEST_CACHE_FLUSH_TIME)
         # cache.set(lock, 1, 1)
 
         # Calculate the board
 
+        submission_filter = {
+            "problem__contest" : contest,
+            "user__is_superuser" : False,
+        }
+
+        if not real_time:
+            submission_filter["create_time__lt"] = contest.get_board_seal_time()
+
         subs = Submission.objects.select_related("user", "user__profile", "problem")\
-            .filter(problem__contest=contest, user__is_superuser=False)\
+            .filter(**submission_filter)\
             .all()
         probs = ContestProblem.objects.select_related("problem").filter(contest=contest).all()
 
-        # Get users who have permission change_groupprofile to the current contest's group
-        admins = set(get_users_with_perm(contest.group, 'change_groupprofile', True, True))
 
         mp = {}
         for p in probs:
@@ -230,7 +252,7 @@ class ContestViewSet(ModelViewSet):
         # for p in probs:
         #     scoreMap[p.id] = float(p.score) / max(1, p.problem.score)
 
-        cache.set(contest.key(), ans, CONTEST_CACHE_EXPIRE_TIME)
+        cache.set(cache_key, ans, CONTEST_CACHE_EXPIRE_TIME)
         return Response(self.get_board_from_cache(group_id, ans))
 
 

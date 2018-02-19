@@ -86,6 +86,9 @@ class Contest(models.Model):
             return None
         return self.notifications.last().title
 
+    def get_board_seal_time(self):
+        return self.start_time + timedelta(minutes=self.board_stop)
+
 
 class ContestProblem(models.Model):
     contest = models.ForeignKey(Contest, related_name='problems')

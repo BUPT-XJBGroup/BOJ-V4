@@ -72,7 +72,8 @@ LANGUAGE_MASK = EnumChoice(
 
 CONTEST_TYPE = EnumChoice(
     (0, 'ICPC'),
-    (1, 'OI')
+    (1, 'OI'),
+    (2, 'ICPC (Release final scoreboard manually)')
 )
 
 GENDER = EnumChoice(
