@@ -15,6 +15,23 @@
                     {% endfor %}
                 </select>
             </div>
+            {% if is_admin %}
+                <div class="form-group">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="board-type" id="sealed-board" checked/>
+                            封榜前
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="board-type" id="realtime-board" />
+                            实时
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+{#            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#release-final-board-dialog">公开终榜</button>#}
         </form>
     </div>
     <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
@@ -31,16 +48,45 @@
     </table>
 </div>
 
+{#<div class="modal fade" id="release-final-board-dialog" role="dialog">#}
+{#    <div class="modal-dialog" role="document">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-header">#}
+{#                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
+{#                <h4 class="modal-title">公开终榜</h4>#}
+{#            </div>#}
+{#            <div class="modal-body">#}
+{#                <div class="alert alert-danger hidden" role="alert" id="release-board-fail-msg">#}
+{#                    操作失败#}
+{#                </div>#}
+{#                <p>确定要将该比赛的终榜公开吗？</p>#}
+{#            </div>#}
+{#            <div class="modal-footer">#}
+{#                <button type="button" class="btn btn-warning" form="release-final-board-form" id="confirm-release-board">确定</button>#}
+{#                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
 {% endblock %}
 {% block script_extra %}
     <script src='https://cdn.firebase.com/v0/firebase.js'></script>
 <script>
-    function getBoardData(group_id) {
-		var url = "/api/contest/{{ contest.pk }}/board/";
-		if (group_id != -1) { 
-			url += "?group_id=" + group_id;
+    function getBoardData(group_id, realtime) {
+		url = "/api/contest/{{ contest.pk }}/board/";
+		args = {};
+
+		if (group_id != -1) {
+			args['group_id'] = group_id;
 		}
+		if (realtime)
+        {
+            args['real_time'] = 1;
+        }
+
         $.get(url,
+            args,
             function(result) {
                 if (!result.length) {
                     return;
@@ -48,8 +94,8 @@
                 $("#id_body").html("");
                 for(var i = 0; i < result.length; i ++){
                     var tr = $("<tr></tr>");
-                    tr.append($("<td>"+ (i + 1) +"</td>"));
-                    tr.append($("<td>"+ result[i].username + "</td>"));
+                    tr.append($("<td>" + (i + 1) +"</td>"));
+                    tr.append($("<td>" + result[i].username + "</td>"));
                     tr.append($("<td>" + result[i].AC + "</td>"));
                     tr.append($("<td>" + result[i].pen + "</td>"));
                     for(var j = 0; j < result[i].problems.length; j ++) {
@@ -73,9 +119,22 @@
     }
 	$(document).ready(function(){  
 		getBoardData(-1);
-		$('#select-group').change(function(){  
-			getBoardData($(this).children('option:selected').val());
-		}); 
+		$('#select-group, #realtime-board, #sealed-board').change(function(){
+			//getBoardData($(this).children('option:selected').val());
+            getBoardData($('#select-group').val(), $('#realtime-board').is(':checked'));
+		});
+{#		$('#confirm-release-board').click(function(){#}
+{#		    $.post("/api/contest/{{ contest.pk }}/release-board/",#}
+{#                function (result) {#}
+{#                    location.reload();#}
+{#                }#}
+{#            ).fail(function(){#}
+{#                $('#release-board-fail-msg').removeClass('hidden');#}
+{#            })#}
+{#        });#}
+{#		$('#release-final-board-dialog').on('hidden.bs.modal', function(){#}
+{#            $('#release-board-fail-msg').addClass('hidden');#}
+{#        })#}
 	});
     //setInterval(getBoardData(), 10000);
 </script>

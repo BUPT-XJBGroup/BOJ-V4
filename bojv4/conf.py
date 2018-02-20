@@ -76,6 +76,10 @@ CONTEST_TYPE = EnumChoice(
     (2, 'ICPC (Release final scoreboard manually)')
 )
 
+CONTEST_TYPE_ICPC = 0
+CONTEST_TYPE_OI = 1
+CONTEST_TYPE_ICPC_MANUAL = 2
+
 GENDER = EnumChoice(
     ('S', _('Secret')),
     ('F', _('Female')),

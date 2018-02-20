@@ -11,7 +11,7 @@ from .tables import ContestTable, NotificationTable, ClarificationTable, Submiss
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
 from .serializers import ContestSerializer
 from problem.models import Problem
-from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME
+from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME, CONTEST_TYPE_ICPC, CONTEST_TYPE_ICPC_MANUAL
 from common.nsq_client import send_to_nsq
 from cheat.models import Record
 from ojuser.models import GroupProfile
@@ -175,10 +175,7 @@ class ContestViewSet(ModelViewSet):
 
         # Only admin can view the real_time board
         if real_time and not request.user in admins:
-            # The 2 is from bojv4/conf.py: CONTEST_TYPE
-            # TODO: Don't use hardcoded literal "2"
-            # but I think maybe this is already enough
-            if contest.ended() == 0 or contest.contest_type == 2:
+            if contest.ended() == 0 or contest.contest_type == CONTEST_TYPE_ICPC_MANUAL:
                 raise PermissionDenied
 
         rt_prefix = "__rt" if real_time else ""
@@ -254,6 +251,20 @@ class ContestViewSet(ModelViewSet):
 
         cache.set(cache_key, ans, CONTEST_CACHE_EXPIRE_TIME)
         return Response(self.get_board_from_cache(group_id, ans))
+
+
+    # @detail_route(methods=['post'], url_path='release-board')
+    # def release_final_board(self, request, pk=None):
+    #     contest = self.get_object()
+    #     if contest.contest_type != CONTEST_TYPE_ICPC_MANUAL:
+    #         raise Http404
+    #     if not request.user.has_perm('ojuser.change_groupprofile', contest.group):
+    #         raise PermissionDenied
+    #
+    #     contest.contest_type = CONTEST_TYPE_ICPC
+    #     contest.save()
+    #
+    #     return Response()
 
 
 class ContestListView(ListView):
