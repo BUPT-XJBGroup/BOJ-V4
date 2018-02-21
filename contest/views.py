@@ -67,8 +67,7 @@ def view_permission_required(func):
             pk = kwargs.get('pk')
             contest = Contest.objects.filter(pk=pk).first()
             if pk and contest:
-                if request.user.has_perm('ojuser.view_groupprofile', contest.group)\
-                        and contest.ended() == 0:
+                if request.user.has_perm('ojuser.view_groupprofile', contest.group):
                     return func(request, *args, **kwargs)
                 elif request.user.has_perm('ojuser.change_groupprofile', contest.group):
                     return func(request, *args, **kwargs)
@@ -387,6 +386,11 @@ class ProblemDetailView(DetailView):
         self.problem = ContestProblem.objects.filter(contest__pk=pk, index=index).first()
         if not self.problem:
             raise Http404
+
+        contest = self.get_object()
+        if not request.user.has_perm('ojuser.change_groupprofile', contest.group)\
+            and contest.ended() != 0:
+            raise PermissionDenied
         return super(ProblemDetailView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -453,6 +457,7 @@ class BoardView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context['problems'] = self.object.problems.all()
+        context['force_realtime'] = '1' if self.contest.ended() == 1 and self.contest.contest_type == CONTEST_TYPE_ICPC else '0'
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             context['is_admin'] = True
             context['view_groups'] = self.contest.group.get_descendants(include_self=True)
@@ -482,7 +487,7 @@ class ContestUpdateView(UpdateView):
         self.object = form.save(commit=False)
         self.object.lang_limited = form.cleaned_data['lang_limited']
         self.object.save()
-        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ'
+        pindex = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         problem_pks = []
         for i in range(len(problem_list)):
             p = Problem.objects.filter(pk=problem_list[i]).first()
@@ -541,6 +546,9 @@ class SubmissionCreateView(DetailView):
         self.index = request.GET.get('index', None)
         self.contest = self.get_object()
         check_permission(request.user, self.contest)
+
+        if self.contest.ended() != 0 and not request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            raise PermissionDenied
 
         return super(SubmissionCreateView, self).dispatch(request, *args, **kwargs)
 

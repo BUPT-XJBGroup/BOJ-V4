@@ -80,7 +80,7 @@
 		if (group_id != -1) {
 			args['group_id'] = group_id;
 		}
-		if (realtime)
+		if (realtime || {{ force_realtime }})
         {
             args['real_time'] = 1;
         }
