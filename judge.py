@@ -90,6 +90,7 @@ def submit_handler(message):
         s.language = mp['language']
         # sub.problem = s.problem.problem
         s.user = User.objects.get(pk=int(mp['user']))
+        s.submit_ip = mp['submit_ip']
         s.save()
         # s.submission = sub
         # s.save()

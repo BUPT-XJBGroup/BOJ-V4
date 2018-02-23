@@ -25,6 +25,7 @@ class AbstractSubmission(models.Model):
     length = models.IntegerField(default=0)
     language = models.CharField(max_length=10, default='gcc', choices=conf.LANGUAGE.choice())
     code_file = models.FileField(null=True, upload_to='code/')
+    submit_ip = models.CharField(max_length=40, null=True, default=None)
 
     class Meta:
         abstract = True

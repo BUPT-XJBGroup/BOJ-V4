@@ -148,6 +148,7 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
         self.object = form.save(commit=False)
         self.object.problem = self.problem
         self.object.user = self.request.user
+        self.object.submit_ip = self.request.META.get('REMOTE_ADDR', None)
         self.object.save()
         # self.object.code_file.write(str(self.object.pk), i
         self.object.judge(form.cleaned_data['code'])

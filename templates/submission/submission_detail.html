@@ -28,6 +28,14 @@
                         <td>提交用户: </td>
                         <td><strong>{{ object.user.username }}</strong></td>
                     </tr>
+                    <tr>
+                        <td>提交时间：</td>
+                        <td>{{ object.create_time }}</td>
+                    </tr>
+                    <tr>
+                        <td>提交IP：</td>
+                        <td>{% if object.submit_ip %}{{ object.submit_ip }}{% else %}未记录{% endif %}</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

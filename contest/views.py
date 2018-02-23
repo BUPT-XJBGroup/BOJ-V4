@@ -108,6 +108,7 @@ class ContestViewSet(ModelViewSet):
             raise PermissionDenied
         judgeRequest = request.data.dict()
         judgeRequest['user'] = request.user.id
+        judgeRequest['submit_ip'] = request.META.get('REMOTE_ADDR', None)
         # send_to_nsq('submit', json.dumps(request.data))
         send_to_nsq('submit', json.dumps(judgeRequest))
         messages.add_message(
