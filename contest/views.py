@@ -592,6 +592,8 @@ class SubmissionDetailView(DetailView):
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
         context['contest'] = self.contest
+        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+            context['is_admin'] = True
         cases = submission.cases
         if submission.status == 'JD' and len(cases) < submission.problem.problem.cases.count():
             cases.append({
