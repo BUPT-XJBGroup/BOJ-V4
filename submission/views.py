@@ -100,7 +100,7 @@ class SubmissionDetailView(DetailView):
         status = self.object.get_status_display()
         context = super(SubmissionDetailView, self).get_context_data(**kwargs)
         context['status'] = status
-        if self.object.user == self.request.user or self.request.user.is_superuser or self.request.user.is_staff:
+        if self.request.user.is_superuser or self.request.user.is_staff:
             context['show_submit_ip'] = True
         ce = self.object.get_info('compile-message')
         context['compile_message'] = ce

@@ -49,7 +49,7 @@
                     {% if is_admin %}
                         <tr>
                             <td>提交IP：</td>
-                            <td>{{ object.submit_ip }}</td>
+                            <td>{% if object.submit_ip %}{{ object.submit_ip }}{% else %}未记录{% endif %}</td>
                         </tr>
                     {% endif %}
                     </tbody>
