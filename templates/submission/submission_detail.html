@@ -32,10 +32,12 @@
                         <td>提交时间：</td>
                         <td>{{ object.create_time }}</td>
                     </tr>
-                    <tr>
-                        <td>提交IP：</td>
-                        <td>{% if object.submit_ip %}{{ object.submit_ip }}{% else %}未记录{% endif %}</td>
-                    </tr>
+                    {% if show_submit_ip %}
+                        <tr>
+                            <td>提交IP：</td>
+                            <td>{% if object.submit_ip %}{{ object.submit_ip }}{% else %}未记录{% endif %}</td>
+                        </tr>
+                    {% endif %}
                     </tbody>
                 </table>
             </div>
