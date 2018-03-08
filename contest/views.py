@@ -370,6 +370,7 @@ class ContestDetailView(DetailView):
         context = super(ContestDetailView, self).get_context_data(**kwargs)
         context['pk'] = self.kwargs['pk']
         context['is_admin'] = self.request.user.has_perm('ojuser.change_groupprofile', self.object.group)
+        context['show_problems'] = context['is_admin'] or self.object.ended() == 0
         return context
 
 
