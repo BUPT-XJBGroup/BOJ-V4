@@ -459,10 +459,11 @@ class BoardView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(BoardView, self).get_context_data(**kwargs)
         context['problems'] = self.object.problems.all()
-        context['force_realtime'] = '1' if self.contest.ended() == 1 and self.contest.contest_type == CONTEST_TYPE_ICPC else '0'
-        if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
+        is_admin = self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group)
+        if is_admin:
             context['is_admin'] = True
             context['view_groups'] = self.contest.group.get_descendants(include_self=True)
+        context['force_realtime'] = '1' if self.contest.ended() == 1 and self.contest.contest_type == CONTEST_TYPE_ICPC and not is_admin else '0'
         return context
 
 

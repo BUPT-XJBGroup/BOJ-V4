@@ -88,10 +88,10 @@
         $.get(url,
             args,
             function(result) {
+                $("#id_body").html("");
                 if (!result.length) {
                     return;
                 }
-                $("#id_body").html("");
                 for(var i = 0; i < result.length; i ++){
                     var tr = $("<tr></tr>");
                     tr.append($("<td>" + (i + 1) +"</td>"));
