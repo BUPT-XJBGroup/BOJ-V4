@@ -100,11 +100,15 @@
                     tr.append($("<td>" + result[i].pen + "</td>"));
                     for(var j = 0; j < result[i].problems.length; j ++) {
                         var sub = $("<td></td>");
-                        var a = $("<a></a>");
+                        var a = $("<p></p>");
                         if (result[i].problems[j].AC > 0){
-                            sub.addClass("kari-board-ac");
+                            if (result[i].problems[j].fb)
+                                sub.addClass('kari-board-fb');
+                            else
+                                sub.addClass("kari-board-ac");
                             a.append(result[i].problems[j].AC);
                             a.append("("+result[i].problems[j].ac_time+"+"+result[i].problems[j].pen+")");
+                            // First blood
                         }
                         else if(result[i].problems[j].AC < 0) {
                             sub.addClass("kari-board-noac");

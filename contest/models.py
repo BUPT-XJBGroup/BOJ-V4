@@ -130,6 +130,7 @@ class ProblemRecord(object):
         self.pen = 0
         self.ac_time = 0
         self.idx = _idx
+        self.first_blood = False
 
     def to_json(self):
         return {
@@ -137,7 +138,8 @@ class ProblemRecord(object):
             'sub': self.sub,
             'pen': self.pen,
             'ac_time': self.ac_time,
-            'idx': self.idx
+            'idx': self.idx,
+            'fb': self.first_blood
         }
 
 

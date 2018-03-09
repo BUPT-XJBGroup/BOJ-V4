@@ -198,10 +198,11 @@ class ContestViewSet(ModelViewSet):
             submission_filter["create_time__lt"] = contest.get_board_seal_time()
 
         subs = Submission.objects.select_related("user", "user__profile", "problem")\
-            .filter(**submission_filter)\
+            .filter(**submission_filter).order_by("create_time")\
             .all()
         probs = ContestProblem.objects.select_related("problem").filter(contest=contest).all()
 
+        solved_problem = set()
 
         mp = {}
         for p in probs:
@@ -229,6 +230,11 @@ class ContestViewSet(ModelViewSet):
                 td = sub.create_time - contest.start_time
                 sinfo.ac_time = int(math.ceil(td.total_seconds() / 60))
                 # info[uid]['pinfo'][idx]["pen"] += int(math.ceil(td.total_seconds() / 60))
+
+                # Mark the problem as solved. If current submission is the first solve of the problem, mark as first blood
+                if not sub.problem.index in solved_problem:
+                    sinfo.first_blood = True
+                    solved_problem.add(sub.problem.index)
             else:
                 sinfo.AC -= 1
                 if contest.contest_type == 0:
