@@ -212,7 +212,7 @@ class ContestViewSet(ModelViewSet):
             uid = sub.user.username
             idx = sub.problem.index
             # if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user.has_perm('ojuser.change_groupprofile', contest.group):
-            if sub.status in ['PD', 'JD', 'CL', 'SE'] or sub.user in admins:
+            if sub.status in ['PD', 'JD', 'CL', 'SE', 'CE'] or sub.user in admins:
                 continue
             if uid not in info:
                 # info[uid] = {'username': uid, 'nickname': sub.user.profile.nickname}
