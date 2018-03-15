@@ -60,9 +60,14 @@ class SubmissionTable(tables.Table):
     language = tables.Column(accessor='language', verbose_name=u"程序语言")
     user = tables.Column(accessor='user', verbose_name=u"提交用户")
     create_time = tables.DateTimeColumn(accessor='create_time', verbose_name=u"创建时间")
+    operations = tables.TemplateColumn(
+        template_name='contest/submission_list_external.html',
+        orderable=False,
+        verbose_name=u"操作"
+    )
 
     class Meta:
         model = Submission
         fields = ('pk', 'problem', 'status', 'running_time', 'running_memory', 'language',
-                  'user', 'create_time')
+                  'user', 'create_time', 'operations')
         template = 'django_tables2/bootstrap.html'

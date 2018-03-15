@@ -272,6 +272,38 @@ class ContestViewSet(ModelViewSet):
     #
     #     return Response()
 
+    @detail_route(methods=['post'], url_path='submission/(?P<submission_id>[0-9]+)/rejudge')
+    def rejudge_submission(self, request, pk=None, submission_id=None):
+        submission = Submission.objects.filter(pk=submission_id)
+        if len(submission) > 0:
+            submission = submission[0]
+        else:
+            raise Http404
+
+        if not request.user.has_perm('ojuser.change_groupprofile', submission.problem.contest.group):
+            raise PermissionDenied
+
+        submission.rejudge()
+
+        return Response()
+
+    @detail_route(methods=['post'], url_path='problem/(?P<problem_index>[A-Z]+)/rejudge')
+    def rejudge_problem(self, request, pk=None, problem_index=None):
+        problem = ContestProblem.objects.filter(contest=self.get_object(), index=problem_index)
+        if len(problem) > 0:
+            problem = problem[0]
+        else:
+            raise Http404
+
+        if not request.user.has_perm('ojuser.change_groupprofile', problem.contest.group):
+            raise PermissionDenied
+
+        submissions = problem.contest_submissions.all()
+        for submission in submissions:
+            submission.rejudge()
+
+        return Response()
+
 
 class ContestListView(ListView):
 
@@ -447,6 +479,7 @@ class SubmissionListView(ListView):
         #  add filter here
         context['filter'] = self.filter
         context['contest'] = self.contest
+        context['problems'] = self.contest.problems.all()
         if self.request.user.has_perm('ojuser.change_groupprofile', self.contest.group):
             context['is_admin'] = True
         return context

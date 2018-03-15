@@ -3,11 +3,12 @@
 {% block body %}
 <div class="page-header">
     {%if is_admin %}
-    {%if contest.ended == 1 %}<a class="btn btn-inverse pull-right" href="{% url 'cheat:record-list' contest.pk %}">代码查重</a>{%endif%}
-    <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
-    <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' contest.pk %}">修改测验</a>
+        {%if contest.ended == 1 %}<a class="btn btn-inverse pull-right" href="{% url 'cheat:record-list' contest.pk %}">代码查重</a>{%endif%}
+        <a class="btn pull-right" href="#" id="rejudge-problem-button" data-toggle="modal" data-target="#rejudge-problem-modal">重判题目</a>
+        <a class="btn pull-right" href="{% url 'contest:add-notification' contest.pk %}">添加公告</a>
+        <a class="btn btn-primary pull-right" href="{% url 'contest:update-contest' contest.pk %}">修改测验</a>
     {%else%}
-    <a class="btn btn-primary pull-right" href="{% url 'contest:add-question' contest.pk %}">添加提问</a>
+        <a class="btn btn-primary pull-right" href="{% url 'contest:add-question' contest.pk %}">添加提问</a>
     {%endif%}
     {% block contest_title %}
     <h1>{{ contest.title }}
@@ -48,6 +49,33 @@
     <div class="container" id="wrapper">
 {% block contest_body %} {% endblock contest_body %}
   </div>
+    {% if is_admin %}
+        <div class="modal fade" id="rejudge-problem-modal" tabindex="-1" role="dialog" aria-labelledby="rejudge-problem-modal-label">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="rejudge-problem-modal-label">重判题目</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="problem-to-rejudge" class="control-label">题目：</label>
+                                <select class="form-control" id="problem-to-rejudge">
+                                    {% for problem in contest.problems.all %}
+                                        <option value="{{ problem.index }}">{{ problem.index }}. {{ problem.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                        <p class="text-danger">警告：将重判该场比赛中指定题目的全部提交</p>
+                        <button class="btn btn-danger" id="confirm-rejudge-problem">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <script src="{{ STATIC_URL }}js/jquery-2.1.1.js"></script>
     <script src="{{ STATIC_URL }}js/plugins/jquery-ui/jquery-ui.min.js"></script>
     <script>
@@ -107,6 +135,31 @@
             $('.leftTime').html(formatSeconds(0));
             $('.progress-bar').width("100%");
         }
+    </script>
+    <script>
+        function rejudgeProblem(index) {
+            url = [
+                "/api/contest/{{ contest.pk }}/problem/",
+                index,
+                "/rejudge/"
+            ].join('');
+
+            $.post(url).success(function() {
+                location.reload();
+            }).error(function (error) {
+                if (typeof error.responseJson !== "undefined") {
+                    alert(error.responseJson.detail);
+                }
+                else
+                    alert("未知错误：" + error.status)
+            });
+        }
+
+        (function () {
+            $("#confirm-rejudge-problem").click(function () {
+                rejudgeProblem($("#problem-to-rejudge").val());
+            });
+        })();
     </script>
     {% block script_extra %}{% endblock %}
 {% endblock %}

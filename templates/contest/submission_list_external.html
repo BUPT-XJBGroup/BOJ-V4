@@ -1,6 +1,8 @@
 {% load bootstrap3 %}
 
 {% if is_admin %}
-<a href="{% url 'contest-rejudge' record.pk %}" title="查看组资源">重新提交</a>
+<a href="#" class="rejudge-submission-link" data-toggle="modal" data-target="#rejudge-confirm-modal" title="重判"
+   data-submission="{{ record.id }}" data-problem="{{ record.problem }}" data-user="{{ record.user }}"
+   data-status="{{ record.status }}">{% bootstrap_icon 'refresh' %}</a>
 {% endif %}
 
