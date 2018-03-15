@@ -25,9 +25,19 @@
             </tr>
             {% endfor %}
         </table>
+
+        <div id="contest-desc">{{ contest.desc }}</div>
     {% endif %}
 </div>
 
+<script src="{{ STATIC_URL }}js/jquery.min.js" ></script>
+<script src="{{ STATIC_URL }}editormd/lib/marked.min.js" ></script>
+<script>
+    (function () {
+        desc = $("#contest-desc");
+        desc.html(marked(desc.text()));
+    })();
+</script>
 {% endblock %}
 
 
