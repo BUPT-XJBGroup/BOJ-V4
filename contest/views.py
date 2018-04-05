@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import json
 import math
+import base64
 from functools import wraps
 
 from .models import Contest, ContestProblem, Submission, Notification, Clarification\
@@ -837,3 +838,36 @@ class QuestionDeleteView(DeleteView):
     def get_success_url(self):
         return reverse('contest:clarification-list', args=[self.contest.pk])
 
+
+class PrinterView(DetailView):
+    model = Contest
+    template_name = "contest/contest_printer.html"
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        contest = self.get_object()
+        if contest.ended() != 0 or contest == None:
+            raise Http404
+        return super(PrinterView, self).dispatch(request, *args, **kwargs)
+
+    def obfuse_auth_info(self, text):
+        if len(text) & 1 != 0:
+            text = "\0" + text
+        result = []
+        for i in xrange(0, len(text), 2):
+            l = ord(text[i])
+            r = ord(text[i + 1])
+            l ^= r
+            r ^= ~l & 0xff
+            result.append(chr(l))
+            result.append(chr(r))
+        return base64.encodestring(''.join(result))
+
+    def get_context_data(self, **kwargs):
+        context = super(PrinterView, self).get_context_data()
+
+        if 'success' in self.request.GET:
+            context['success'] = True
+        else:
+            context['auth'] = self.obfuse_auth_info(u"{}|{}".format(self.request.user.username, self.request.user.profile.nickname).encode('utf8'))
+        return context

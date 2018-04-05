@@ -13,13 +13,14 @@ class Contest(models.Model):
 
     author = models.ForeignKey(User, related_name='contests')
     group = models.ForeignKey(GroupProfile, related_name='contests')
-    title = models.CharField(max_length=30)
+    title = models.CharField(max_length=128)
     start_time = models.DateTimeField(null=True, blank=True)
     length = models.IntegerField(default=300)
     board_stop = models.IntegerField(default=300)
     desc = models.TextField(default='')
     lang_limit = models.IntegerField(default=0)
     contest_type = models.IntegerField(default=0, choices=conf.CONTEST_TYPE.choice())
+    printer_url = models.CharField(max_length=64, null=True, default=None)
 
     def __init__(self, *args, **kwargs):
         super(Contest, self).__init__(*args, **kwargs)

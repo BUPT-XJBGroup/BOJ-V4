@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/notification/(?P<nid>[0-9]+)/update/$', views.NotificationUpdateView.as_view(), name='update-notification'),
     #url(r'^(?P<pid>[0-9]+)/view/$', views.FileListView.as_view(), name='file-list'),
     #url(r'^delete/(?P<pk>\d+)$', views.FileDeleteView.as_view(), name='upload-delete'),
+    url(r'^(?P<pk>[0-9]+)/printer/$', views.PrinterView.as_view(), name='printer')
 ]
 
 
