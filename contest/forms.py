@@ -9,7 +9,7 @@ from django_select2.forms import ModelSelect2Widget
 
 class ContestForm(forms.ModelForm):
 
-    title = forms.CharField(max_length=64, min_length=1,
+    title = forms.CharField(max_length=128, min_length=1,
             label=u'测验标题', widget=forms.TextInput(attrs={
                 'class':'input-block-level',
                 'placeholder':'Contest Title'}))
