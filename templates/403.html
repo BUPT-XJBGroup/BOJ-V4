@@ -11,7 +11,7 @@
         <div class="container">
             {% include "_messages.html" %}
             <h1>{% blocktrans %}403{% endblocktrans %}</h1>
-            <p>{% blocktrans %}您没有相应的访问或操作权限{% endblocktrans %}</p>
+            <p>{% blocktrans %}您没有相应的访问或操作权限，或该功能已被管理员临时禁用。{% endblocktrans %}</p>
             {% if not user.is_authenticated %}
             {% url "account_login" as login_url %}
             {% url "account_signup" as signup_url %}

@@ -23,12 +23,28 @@ from rest_framework.permissions import BasePermission
 from django.shortcuts import get_object_or_404
 from guardian.shortcuts import get_objects_for_user
 from django_tables2 import RequestConfig
+from django.core.cache import cache
 
 from problem.models import Problem
 from ojuser.models import GroupProfile
 import logging
 logger = logging.getLogger('django')
 #  from guardian.shortcuts import get_objects_for_user
+
+
+def disable_normal_submission(time_minutes):
+    cache.set("disable_normal_submission", True, time_minutes * 60)
+
+def is_normal_submission_disabled():
+    if cache.get("disable_normal_submission"):
+        return True
+    return False
+
+def is_submission_enabled_or_privileged(user):
+    if user.is_superuser or user.is_staff or user.profile.is_teacher:
+        return
+    if is_normal_submission_disabled():
+        raise PermissionDenied
 
 
 class CaseResultPermission(BasePermission):
@@ -64,6 +80,7 @@ class SubmissionListView(ListView):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
+        is_submission_enabled_or_privileged(request.user)
         self.user = request.user
         return super(SubmissionListView, self).dispatch(request, *args, **kwargs)
 
@@ -85,6 +102,7 @@ class SubmissionDetailView(DetailView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pk=None, *args, **kwargs):
+        is_submission_enabled_or_privileged(request.user)
         self.user = request.user
         problem = self.get_object().problem
         if not problem or not problem.view_by_user(request.user):
@@ -124,6 +142,7 @@ class SubmissionCreateView(SuccessMessageMixin, CreateView):
 
     @method_decorator(login_required)
     def dispatch(self, request, pid=None, *args, **kwargs):
+        is_submission_enabled_or_privileged(request.user)
         pid = self.kwargs['pid']
         self.problem = Problem.objects.filter(pk=pid).first()
         if not self.problem or not self.problem.view_by_user(request.user):
