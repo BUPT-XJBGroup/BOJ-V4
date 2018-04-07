@@ -95,7 +95,11 @@
                 for(var i = 0; i < result.length; i ++){
                     var tr = $("<tr></tr>");
                     tr.append($("<td>" + (i + 1) +"</td>"));
-                    tr.append($("<td>" + result[i].username + " <small>(" + result[i].nickname + ")</small>" + "</td>"));
+                    nickname = $("<small></small>");
+                    nickname.text("(" + result[i].nickname + ")");
+                    usercell = $("<td>" + result[i].username + " </td>");
+                    usercell.append(nickname);
+                    tr.append(usercell);
                     tr.append($("<td>" + result[i].AC + "</td>"));
                     tr.append($("<td>" + result[i].pen + "</td>"));
                     for(var j = 0; j < result[i].problems.length; j ++) {
