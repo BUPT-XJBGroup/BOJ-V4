@@ -844,10 +844,14 @@ class PrinterView(DetailView):
     template_name = "contest/contest_printer.html"
 
     @method_decorator(login_required)
+    @method_decorator(view_permission_required)
     def dispatch(self, request, *args, **kwargs):
         contest = self.get_object()
-        if contest.ended() != 0 or contest == None:
+        if contest is None:
             raise Http404
+        if not (request.user.is_superuser or request.user.is_staff or request.user.profile.is_teacher):
+            if contest.ended() != 0:
+                raise Http404
         return super(PrinterView, self).dispatch(request, *args, **kwargs)
 
     def obfuse_auth_info(self, text):
