@@ -39,7 +39,7 @@
             <th width="10%">排名</th>
             <th width="14%">用户</th>
             <th width="8%">题数</th>
-            <th width="8%">{% if contest.contest_type == 0 %}罚时{% else %}得分{% endif %}</th>
+            <th width="8%">{% if contest.type_is_icpc %}罚时{% else %}得分{% endif %}</th>
             {%for p in problems %}
             <th>{{p.index}}</th>
             {%endfor%}

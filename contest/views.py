@@ -12,7 +12,7 @@ from .tables import ContestTable, NotificationTable, ClarificationTable, Submiss
 from .forms import ContestForm, SubmissionForm, NotificationForm, QuestionForm, AnswerForm
 from .serializers import ContestSerializer
 from problem.models import Problem
-from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME, CONTEST_TYPE_ICPC, CONTEST_TYPE_ICPC_MANUAL
+from bojv4.conf import LANGUAGE_MASK, CONTEST_TYPE, CONTEST_CACHE_EXPIRE_TIME, CONTEST_CACHE_FLUSH_TIME, CONTEST_TYPE_ICPC, CONTEST_TYPE_ICPC_MANUAL, CONTEST_TYPE_OI
 from common.nsq_client import send_to_nsq
 from cheat.models import Record
 from ojuser.models import GroupProfile
@@ -238,14 +238,17 @@ class ContestViewSet(ModelViewSet):
                     solved_problem.add(sub.problem.index)
             else:
                 sinfo.AC -= 1
-                if contest.contest_type == 0:
+                if contest.type_is_icpc():
                     sinfo.pen += 20
-            if contest.contest_type == CONTEST_TYPE.OI:
+            if contest.type_is_oi():
                 sinfo.pen = max(sinfo.pen, mp[idx] * sub.score)
         info = info.values()
+        calc_contest_type = CONTEST_TYPE_ICPC
+        if contest.type_is_oi():
+            calc_contest_type = CONTEST_TYPE_OI
         for v in info:
-            v.calc(probs, contest.contest_type)
-        if contest.contest_type == 0:
+            v.calc(probs, calc_contest_type)
+        if contest.type_is_icpc():
             info.sort(key=lambda x: x.AC*1000000 - x.pen, reverse=True)
         else:
             info.sort(key=lambda x: x.pen, reverse=True)

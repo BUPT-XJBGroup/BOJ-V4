@@ -90,6 +90,12 @@ class Contest(models.Model):
     def get_board_seal_time(self):
         return self.start_time + timedelta(minutes=self.board_stop)
 
+    def type_is_icpc(self):
+        return self.contest_type == conf.CONTEST_TYPE_ICPC or self.contest_type == conf.CONTEST_TYPE_ICPC_MANUAL
+
+    def type_is_oi(self):
+        return self.contest_type == conf.CONTEST_TYPE_OI
+
 
 class ContestProblem(models.Model):
     contest = models.ForeignKey(Contest, related_name='problems')
