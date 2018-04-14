@@ -30,8 +30,10 @@
                         </label>
                     </div>
                 </div>
+                {% if can_release %}
+                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#release-final-board-dialog">公开终榜</button>
+                {% endif %}
             {% endif %}
-{#            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#release-final-board-dialog">公开终榜</button>#}
         </form>
     </div>
     <table class="table table-bordered table-striped table-hover table-condensed" id="id_rank">
@@ -48,26 +50,31 @@
     </table>
 </div>
 
-{#<div class="modal fade" id="release-final-board-dialog" role="dialog">#}
-{#    <div class="modal-dialog" role="document">#}
-{#        <div class="modal-content">#}
-{#            <div class="modal-header">#}
-{#                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>#}
-{#                <h4 class="modal-title">公开终榜</h4>#}
-{#            </div>#}
-{#            <div class="modal-body">#}
-{#                <div class="alert alert-danger hidden" role="alert" id="release-board-fail-msg">#}
-{#                    操作失败#}
-{#                </div>#}
-{#                <p>确定要将该比赛的终榜公开吗？</p>#}
-{#            </div>#}
-{#            <div class="modal-footer">#}
-{#                <button type="button" class="btn btn-warning" form="release-final-board-form" id="confirm-release-board">确定</button>#}
-{#                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}
+{% if can_release %}
+    <div class="modal fade" id="release-final-board-dialog" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">公开终榜</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger hidden" role="alert" id="release-board-fail-msg">
+                        操作失败
+                    </div>
+                    <p>确定要将该比赛的终榜公开吗？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning" form="release-final-board-form" id="confirm-release-board">确定</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form id="release-final-board-form" class="hidden" method="post" action="/api/contest/{{ contest.pk }}/release-board/">
+        {% csrf_token %}
+    </form>
+{% endif %}
 
 {% endblock %}
 {% block script_extra %}

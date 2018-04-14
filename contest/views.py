@@ -263,18 +263,18 @@ class ContestViewSet(ModelViewSet):
         return Response(self.get_board_from_cache(group_id, ans))
 
 
-    # @detail_route(methods=['post'], url_path='release-board')
-    # def release_final_board(self, request, pk=None):
-    #     contest = self.get_object()
-    #     if contest.contest_type != CONTEST_TYPE_ICPC_MANUAL:
-    #         raise Http404
-    #     if not request.user.has_perm('ojuser.change_groupprofile', contest.group):
-    #         raise PermissionDenied
-    #
-    #     contest.contest_type = CONTEST_TYPE_ICPC
-    #     contest.save()
-    #
-    #     return Response()
+    @detail_route(methods=['post'], url_path='release-board')
+    def release_final_board(self, request, pk=None):
+        contest = self.get_object()
+        if contest.contest_type != CONTEST_TYPE_ICPC_MANUAL:
+            raise Http404
+        if not request.user.has_perm('ojuser.change_groupprofile', contest.group):
+            raise PermissionDenied
+
+        contest.contest_type = CONTEST_TYPE_ICPC
+        contest.save()
+
+        return HttpResponseRedirect(reverse("contest:contest-detail", args=[self.get_object().pk]))
 
     @detail_route(methods=['post'], url_path='submission/(?P<submission_id>[0-9]+)/rejudge')
     def rejudge_submission(self, request, pk=None, submission_id=None):
@@ -506,6 +506,8 @@ class BoardView(DetailView):
         if is_admin:
             context['is_admin'] = True
             context['view_groups'] = self.contest.group.get_descendants(include_self=True)
+            if self.object.contest_type == CONTEST_TYPE_ICPC_MANUAL:
+                context['can_release'] = True
         context['force_realtime'] = '1' if self.contest.ended() == 1 and self.contest.contest_type == CONTEST_TYPE_ICPC and not is_admin else '0'
         return context
 
