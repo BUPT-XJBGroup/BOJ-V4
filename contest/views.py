@@ -241,7 +241,7 @@ class ContestViewSet(ModelViewSet):
                 if contest.type_is_icpc():
                     sinfo.pen += 20
             if contest.type_is_oi():
-                sinfo.pen = max(sinfo.pen, mp[idx] * sub.score)
+                sinfo.pen = max(sinfo.pen, int(mp[idx] * sub.score))
         info = info.values()
         calc_contest_type = CONTEST_TYPE_ICPC
         if contest.type_is_oi():
