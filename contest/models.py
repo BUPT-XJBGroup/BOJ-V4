@@ -163,6 +163,7 @@ class BoradRecord(object):
     def add_problem(self, idx, problem):
         self.problems[idx] = problem
 
+    #calc user rank
     def calc(self, probs, contest_type):
         for prob in probs:
             if not self.problems.has_key(prob.index):

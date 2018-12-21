@@ -90,7 +90,8 @@ class ContestViewSet(ModelViewSet):
     queryset = Contest.objects.all()
     permission_classes = (IsAuthenticated, ContestViewPermission)
     serializer_class = ContestSerializer
-
+    def list(self, request):
+        return Response()
     @detail_route(methods=['post'], url_path='submit')
     def submit(self, request, pk=None):
         if self.get_object().ended() != 0 and not request.user.has_perm('ojuser.change_groupprofile', self.get_object().group):

@@ -40,6 +40,16 @@ from guardian.decorators import permission_required_or_403
 import logging
 logger = logging.getLogger('django')
 
+
+
+class UserChangePermission(BasePermission):
+
+   def has_object_permission(self, request, view, obj):
+       if request.user.is_superuser:
+           return True
+       return False
+
+
 class GroupListView(ListView):
 
     model = GroupProfile
@@ -367,10 +377,12 @@ class GroupViewSet(viewsets.ModelViewSet):
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated, ]
-
-    @list_route(methods=['post'], url_path='bulk_create')
+    permission_classes = [IsAuthenticated, UserChangePermission]
+    def list(self, request):
+        return Response()
+    @list_route(methods=['post'], permission_classes = [IsAuthenticated, UserChangePermission] ,url_path='bulk_create')
     def create_users(self, request):
+     #   return
         if not request.user.is_staff:
             raise PermissionDenied
         mp = {}
@@ -405,7 +417,8 @@ class GroupProfileViewSet(viewsets.ModelViewSet):
     queryset = GroupProfile.objects.all()
     serializer_class = GroupProfileSerializer
     permission_classes = [IsAuthenticated, GroupChangePermission]
-
+    def list(self, request):
+        return Response()
     @detail_route(methods=['post', 'get', 'put', ], url_path='members')
     def manage_member(self, request, pk=None):
         if not request.user.is_staff:

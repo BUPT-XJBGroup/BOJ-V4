@@ -59,7 +59,8 @@ class ProblemViewSet(viewsets.ModelViewSet):
     queryset = Problem.objects.all()
     serializer_class = ProblemSerializer
     permission_classes = (IsAuthenticated, ProblemChangePermission)
-
+    def list(self, request):
+        return Response()
     @detail_route(methods=['get'], url_path='datas')
     def get_problem_datas(self, request, pk=None):
         problem = self.get_object()
@@ -121,7 +122,6 @@ class ScoreViewSet(viewsets.ModelViewSet):
 
 
 class ProblemListView(ListView):
-
     model = Problem
     paginate_by = 20
 
