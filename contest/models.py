@@ -215,12 +215,12 @@ class Submission(AbstractSubmission):
 
         # Calculate score for OI mode
         score = 0
-        if case['position'] == self.get_problem().cases.count() - 1:
+        if case['status'] != 'AC' or case['position'] == self.get_problem().cases.count() - 1:
             case_entities = self.problem.problem.cases.order_by('position').all()
             for case_result in self.cases:
                 if case_result['status'] == 'AC':
                     case_index = case_result['position']
-                    if case_index >= 0 and case_index < case_entities.count():
+                    if 0 <= case_index < case_entities.count():
                         score += case_entities[case_index].score
         self.score = score
         self.save()
