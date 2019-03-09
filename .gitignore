@@ -17,3 +17,4 @@ my.cnf
 *.sock
 django.xml
 env
+venv

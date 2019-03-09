@@ -7,7 +7,7 @@ django-bootstrap3==7.0.1
 django-crispy-forms==1.6.0
 django-debug-toolbar==1.4
 django-filer==1.1.1
-django-filter
+django-filter==0.15.0
 django-guardian==1.4.4
 django-mptt==0.8.3
 django-polymorphic==0.9.1
@@ -29,7 +29,7 @@ pytz
 sqlparse==0.1.19
 Unidecode==0.4.19
 Fabric==1.13.1
-django-redis
+django-redis==4.4.0
 mongoengine
 requests
 MySQL-python
