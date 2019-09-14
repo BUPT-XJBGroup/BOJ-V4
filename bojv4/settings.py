@@ -1,6 +1,6 @@
 import os
 from secret_settings import *
-
+ALLOWED_HOSTS=['*']
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 #  PACKAGE_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, os.pardir))
 PACKAGE_ROOT = PROJECT_ROOT
@@ -259,7 +259,7 @@ AUTHENTICATION_BACKENDS = [
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': '127.0.0.1:6379',
+        'LOCATION': 'redis://localhost:6379',
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
