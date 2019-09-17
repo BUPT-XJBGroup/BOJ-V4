@@ -107,4 +107,5 @@ new Vue({
 	template: '<App/>',
 })
 import '@/vuetify.css';
-
+Vue.prototype.$axios = axios
+axios.defaults.withCredentials=true;

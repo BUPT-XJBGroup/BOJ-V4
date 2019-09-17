@@ -19,7 +19,6 @@ urlpatterns = [
     url(r'^myusers/query/$', views.UserQueryView.as_view(), name='user-query'),
     url(r"^signup/$", views.OjUserSignupView.as_view(), name="account_signup"),
     url(r"^profiles/$", views.OjUserProfilesView.as_view(), name="account-profile"),
-    url(r"^", include("account.urls"))
-    ,
+    url(r"^", include("account.urls")),
 ]
 

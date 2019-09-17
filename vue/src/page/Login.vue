@@ -3,7 +3,7 @@
     <v-flex xs12 md6>
       <v-card>
         <v-container>
-          <v-text-field v-model="username" label="Username" prepend-icon="mdi-account"/>
+          <v-text-field v-model="username" label="Username" prepend-icon="mdi-account" />
           <v-text-field
             v-model="password"
             label="Password"
@@ -33,8 +33,20 @@ export default {
     } catch (e) {
       this.error = "";
     }
+    var vm = this;
+    this.axios.get("http://10.105.242.93:23333/accounts/login/").then(res => {
+      console.log(res);
+      var arr,
+        reg = new RegExp("csrfmiddlewaretoken' value='(.*)'");
+      if ((arr = res.data.match(reg))) {
+        vm.csrfmiddlewaretoken = unescape(arr[1]);
+        document.cookie = "csrftoken=" + escape(unescape(arr[1])) + ";";
+      } else console.log("not found crsf value");
+      console.log(vm.csrfmiddlewaretoken);
+    });
   },
   data: () => ({
+    csrfmiddlewaretoken: "",
     username: "",
     password: "",
     error: ""
@@ -42,26 +54,22 @@ export default {
   methods: {
     login() {
       if (this.check()) {
+        var form =
+          "csrfmiddlewaretoken=" +
+          escape(this.csrfmiddlewaretoken) +
+          "&username=" +
+          escape(this.username) +
+          "&password=" +
+          escape(this.password);
+        var vm = this;
         this.axios
-          .post(
-            "http://localhost:8000/login",
-            JSON.stringify({
-              username: this.username,
-              password: this.password
-            })
-          )
+          .post("http://10.105.242.93:23333/accounts/login/", form)
           .then(res => {
-            if (res.data != "Failed") {
-              Store.dispatch("initState", res.data)
-                .then(() => {
-                  router.push("markdown");
-                })
-                .catch(error => {
-                  this.error = "Login Failed";
-                });
-            } else {
-              this.error = "Wrong Username or Password";
-            }
+            Store.dispatch("initState", res.data)
+            console.log("OK");
+          })
+          .catch(res => {
+            vm.error = res;
           });
       }
     },

@@ -7,7 +7,6 @@ const store = new Vuex.Store({
   state: {
     username: sessionStorage.getItem("username") ? sessionStorage.getItem("username") : "Anonymous",
     isLogin: sessionStorage.getItem("isLogin") == "true" ? true : false,
-    token: sessionStorage.getItem("token") ? sessionStorage.getItem("token") : "",
     email: sessionStorage.getItem("email") ? sessionStorage.getItem("email") : "",
     IsStaff: sessionStorage.getItem("IsStaff") == "true" ? true : false,
   },
@@ -17,9 +16,6 @@ const store = new Vuex.Store({
     },
     email: function (state) {
       return state.email;
-    },
-    token: function (state) {
-      return state.token;
     },
     isLogin: function (state) {
       return state.isLogin;
@@ -39,10 +35,8 @@ const store = new Vuex.Store({
       } else if (user == "") {
         state.username = "Anonymous";
         state.isLogin = false;
-        state.token = "";
         state.email = "";
         state.IsStaff = false;
-        sessionStorage.setItem("token", "");
         sessionStorage.setItem("isLogin", "false");
         sessionStorage.setItem("username", "");
         sessionStorage.setItem("email", "");
@@ -52,17 +46,11 @@ const store = new Vuex.Store({
     userEmail(state, Url) {
       state.email = Url ? Url : "";
     },
-    userToken(state, userToken) {
-      state.token = userToken ? userToken : "";
-    },
     userIsStaff(state, IsStaff) {
       state.IsStaff = IsStaff == true ? true : false;
     }
   },
   actions: {
-    setToken({ commit }, token) {
-      commit("userToken", token);
-    },
     setUser({ commit }, username) {
       commit("userStatus", username);
     },
@@ -72,16 +60,14 @@ const store = new Vuex.Store({
     setStaff({ commit }, IsStaff) {
       commit("userIsStaff", IsStaff);
     },
-    initState({ commit }, data) {
-      commit("userToken", data.token);
-      commit("userStatus", data.username);
-      commit("userEmail", data.email);
-      commit("userIsStaff", data.IsStaff);
-      sessionStorage.setItem("token", data.token);
+    initState({ commit }, name,email,staff) {
+      commit("userStatus", name);
+      commit("userEmail", email);
+      commit("userIsStaff", staff);
       sessionStorage.setItem("isLogin", "true");
-      sessionStorage.setItem("username", data.username);
-      sessionStorage.setItem("email", data.email);
-      sessionStorage.setItem("IsStaff", data.IsStaff?"true":"false");
+      sessionStorage.setItem("username", name);
+      sessionStorage.setItem("email", email);
+      sessionStorage.setItem("IsStaff", staff?"true":"false");
     },
     logout({ commit }) {
       commit("userStatus", "");

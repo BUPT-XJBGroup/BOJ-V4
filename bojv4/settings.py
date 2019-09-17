@@ -9,7 +9,7 @@ BASE_DIR = PROJECT_ROOT
 #  Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 #  BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = False
+DEBUG = True
 #DEBUG = True
 
 
@@ -63,6 +63,7 @@ STATIC_URL = "/site_media/static/"
 
 # Additional locations of static files
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "vue/dist/static"),
     os.path.join(PROJECT_ROOT, "site_media", "static"),
 ]
 
@@ -79,6 +80,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             os.path.join(PROJECT_ROOT, "templates"),
+            os.path.join(PROJECT_ROOT, "vue","dist"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -98,25 +100,23 @@ TEMPLATES = [
         },
     },
 ]
-
 MIDDLEWARE_CLASSES = [
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.contrib.sites.middleware.CurrentSiteMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = "bojv4.urls"
-
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = "bojv4.wsgi.application"
 
 INSTALLED_APPS = [
+    'corsheaders',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -304,3 +304,5 @@ FILER_CANONICAL_URL = 'sharing/'
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = ["10.105.243.4", "10.205.242.83", "127.0.0.1"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True

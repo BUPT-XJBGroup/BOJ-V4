@@ -27,6 +27,7 @@ router.register(r'contest', ContestViewSet)
 
 urlpatterns = [
     url(r"^$", HomepageView.as_view(), name="home"),
+    # url(r"^$", TemplateView.as_view(template_name="index.html"),name="home"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^accounts/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
