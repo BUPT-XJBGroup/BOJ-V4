@@ -11,7 +11,7 @@ from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
 from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 from .views import HomepageView
-
+from lib.views import QueryUser,SelfInfo
 
 router = routers.DefaultRouter()
 #  router.register(r'profiles', UserProfileViewSet)
@@ -27,7 +27,6 @@ router.register(r'contest', ContestViewSet)
 
 urlpatterns = [
     url(r"^$", HomepageView.as_view(), name="home"),
-    # url(r"^$", TemplateView.as_view(template_name="index.html"),name="home"),
     url(r"^admin/", include(admin.site.urls)),
     url(r"^accounts/", include("ojuser.urls")),
     url(r"^problem/", include("problem.urls", namespace="problem")),
@@ -40,6 +39,8 @@ urlpatterns = [
     url(r"^api/", include(router.urls)),
     url(r"^announcement/", include("announcement.urls", namespace="announcement")),
     url(r"^api-auth/", include('rest_framework.urls', namespace="rest_framework")),
+    url(r"^rinne/QueryUser", QueryUser),
+    url(r"^rinne/SelfInfo", SelfInfo),
     url(r'^', include('filer.server.urls')),
 ]
 if settings.DEBUG:

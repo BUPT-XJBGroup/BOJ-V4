@@ -5,8 +5,6 @@
         <v-layout row wrap>
           <v-flex xs12>
             <v-text-field v-model="title" clearable label="Title" type="text"/>
-            <v-text-field v-model="cat" clearable label="Catalogue" type="text"/>
-            <v-text-field v-model="brief" clearable label="Brief" type="text"/>
             <v-textarea
               v-model="content"
               v-if="!preview"
@@ -42,10 +40,8 @@ export default {
   },
   data: () => ({
     title: "",
-    cat: "",
     content: "",
     message: "",
-    brief: "",
     loading: false,
     preview: false
   }),
@@ -74,12 +70,6 @@ export default {
     check() {
       if (this.title == "") {
         this.message = "Title cannot be empty";
-        return false;
-      } else if (this.cat == "") {
-        this.message = "Catalogue cannot be empty";
-        return false;
-      } else if (this.brief == "") {
-        this.message = "Brief cannot be empty";
         return false;
       } else if (this.content == "") {
         this.message = "Content cannot be empty";

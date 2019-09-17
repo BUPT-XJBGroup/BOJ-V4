@@ -64,13 +64,12 @@ export default {
         var vm = this;
         this.axios
           .post("http://10.105.242.93:23333/accounts/login/", form)
-          .then(res => {
-            Store.dispatch("initState", res.data)
-            console.log("OK");
-          })
           .catch(res => {
             vm.error = res;
+            return;
           });
+        console.log("OK");
+        this.showname();
       }
     },
     check() {
@@ -83,6 +82,19 @@ export default {
       } else {
         return true;
       }
+    },
+    showname() {
+      var vm = this;
+      this.axios
+        .get("http://10.105.242.93:23333/rinne/SelfInfo")
+        .then(res => {
+          Store.dispatch("initState", res.data).then(() => {
+            router.push("/");
+          });
+        })
+        .catch(res => {
+          vm.error = res;
+        });
     }
   }
 };

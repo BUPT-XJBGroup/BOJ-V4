@@ -2,9 +2,9 @@
   <div>
     <v-card style="margin-block-end: 2em;">
       <v-card-text>
-        <h2>About Me</h2>
+        <v-card-title class="headline">About</v-card-title>
+        <v-divider />
       </v-card-text>
-      <v-divider/>
       <v-layout column>
         <v-container>
           <v-flex xs12 sm6>
@@ -13,66 +13,92 @@
           <v-flex xs12 sm6 align-center layout text-xs-center>
             <v-avatar :size="avatarSize" color="grey lighten-4">
               <img
-                src="https://secure.gravatar.com/avatar/6160fc0a17c153c47aaf52fde6236368?s=512"
+                src="https://gss3.bdstatic.com/7Po3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike92%2C5%2C5%2C92%2C30/sign=dc707ea38e5494ee932f074b4c9c8b9b/aec379310a55b319c46a7d6941a98226cffc171e.jpg"
                 alt="avatar"
-              >
+              />
             </v-avatar>
           </v-flex>
         </v-container>
         <v-flex sm12>
           <v-card-text>
-            <h3>9646516</h3>
-            <h3>
-              <a
-                href="https://www.bupt.edu.cn/"
-                style="text-decoration: blink;color:#00A1F1;"
-              >Beijing University of Posts and Telecommunications</a>
-            </h3>
-            <h3>
-              <b style="color:black;">Codeforces:</b>
-              <a
-                href="https://codeforces.com/profile/9646516"
-                style="color:#AA00AA;text-decoration: blink;"
-              >9646516</a>
-            </h3>
-            <h3>
-              <b style="color:black;">Tieba:</b>
-              <a
-                href="http://tieba.baidu.com/home/main?un=9646516"
-                style="color:#3385FF;text-decoration: blink;"
-              >9646516</a>
-            </h3>
-            <h3>
-              <b style="color:black;">Zhihu:</b>
-              <a
-                href="https://www.zhihu.com/people/9646516-92/activities"
-                style="color:#399FFF;text-decoration: blink;"
-              >9646516</a>
-            </h3>
-            <h3>
-              <b style="color:black;">Github:</b>
-              <a
-                href="https://github.com/9646516"
-                style="color:#24292E;text-decoration: blink;"
-              >9646516</a>
-            </h3>
-            <h3>
-              <b style="color:black;">Contact:</b>
-              <a
-                href="mailto:zyq855@gmail.com"
-                style="color:#80407B;text-decoration: blink;"
-              >zyq855#gmail.com</a>
-            </h3>
+            <v-card-title class="headline">BOJV4-Refreshed</v-card-title>
+            <v-card-title class="headline">Supported By Vue and Vuetify</v-card-title>
+            <v-card-title class="headline">Develop And Maintain By BUPT ACM Team</v-card-title>
           </v-card-text>
         </v-flex>
       </v-layout>
     </v-card>
     <v-card style="margin-block-end: 2em;">
       <v-card-text>
-        <h2>Intro</h2>
-      <v-divider/>
-        <h4>Supported By Vue and Vuetify</h4>
-        <h4>Copyright 2019-2019.9646516.All Rights Reserved</h4>
+        <v-card-title class="headline">Develop Team</v-card-title>
+        <v-divider />
+        <v-flex xs6>
+          <a href="https://github.com/wangzitian0">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars3.githubusercontent.com/u/8103666?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/Little-Wallace">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars0.githubusercontent.com/u/16376959?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/MyonKeminta">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars3.githubusercontent.com/u/9948422?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/dimpurr">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars3.githubusercontent.com/u/5173244?s=400" />
+            </v-avatar>
+          </a>
+        </v-flex>
+
+        <v-flex xs6>
+          <a href="https://github.com/birdstorm">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars0.githubusercontent.com/u/15857134?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/Mr-Phoebe">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars2.githubusercontent.com/u/15867761?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/Macaulish64">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars1.githubusercontent.com/u/20122039?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/fipped">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars2.githubusercontent.com/u/9395718?s=400" />
+            </v-avatar>
+          </a>
+        </v-flex>
+
+        <v-flex xs6>
+          <a href="https://github.com/hoowater">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars2.githubusercontent.com/u/10193211?s=400" />
+            </v-avatar>
+          </a>
+          <a href="https://github.com/9646516">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars2.githubusercontent.com/u/38785664?s=400" />
+            </v-avatar>
+          </a>
+        </v-flex>
+
+        <v-card-title class="headline">Copyright 2016-2019 BUPT ACM Team.All Rights Reserved</v-card-title>
+        <v-card-title class="headline">
+          <a style="color:black;">Contact:</a>
+          <a
+            href="mailto:buptacm@qq.com"
+            style="color:#80407B;text-decoration: blink;"
+          >buptacm@qq.com</a>
+        </v-card-title>
       </v-card-text>
     </v-card>
   </div>

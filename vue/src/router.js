@@ -11,7 +11,6 @@ import Article from '@/page/Article'
 import Error from '@/page/Error'
 import Edit from '@/page/Edit'
 import Register from '@/page/Register'
-import UpdateInfo from '@/page/UpdateInfo'
 
 Vue.use(Router)
 
@@ -54,11 +53,6 @@ export default new Router({
       component: Articles
     },
     {
-      path: '/',
-      name: 'Markdown',
-      component: Markdown
-    },
-    {
       path: '/article/:id',
       name: 'Article',
       component: Article
@@ -82,11 +76,6 @@ export default new Router({
       path: '/register',
       name: 'Register',
       component: Register
-    },
-    {
-      path: '/updateInfo',
-      name: 'UpdateInfo',
-      component: UpdateInfo
     }
   ]
 })
