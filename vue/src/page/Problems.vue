@@ -1,48 +1,78 @@
 <template>
-  <v-sheet>
-    <v-layout justify-center v-if="done">
-      <v-progress-circular v-if="!done" indeterminate />
-      <v-flex xs12 md10>
-        <v-card v-for="i in articles" :key="i[0]" style="margin-block-end: 2em;">
-          <v-card-text>
-            <router-link
-              :to="{ name: 'Problem' , params: {id: i[1] } }"
-              style="font-size:x-large;"
-            >uid={{i[0]}} name={{i[1]}}</router-link>
-          </v-card-text>
-        </v-card>
-      </v-flex>
-    </v-layout>
-    <v-layout justify-center v-if="done">
-      <v-pagination v-model="page" :length="6"></v-pagination>
-    </v-layout>
-  </v-sheet>
+  <div>
+    <v-data-table
+      :headers="headers"
+      :items="desserts"
+      :search="search"
+      hide-actions
+      :rows-per-page-items="text_per_page"
+      :pagination.sync="pagination"
+      class="elevation-1"
+    >
+      <template v-slot:items="props">
+        <router-link
+          :to="{'name': 'Problem', params: {'id': props.item.uid}}"
+          :style="{cursor: 'pointer',background:props.item.solved?  'peachpuff;':'none'}"
+          tag="tr"
+        >
+          <td>{{ props.item.uid }}</td>
+          <td>{{props.item.name }}</td>
+          <td>{{ props.item.time_limit }}</td>
+          <td>{{ props.item.memory_limit }}</td>
+          <td>{{ props.item.superadmin}}</td>
+        </router-link>
+      </template>
+    </v-data-table>
+    <div class="text-xs-center pt-2">
+      <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+    </div>
+  </div>
 </template>
-
 <script>
 export default {
-  name: "Articles",
+  name: "Problems",
   mounted() {
-    this.axios
-      .get("http://10.105.242.93:23333/rinne/GetProblemList")
+    this.axios.defaults.withCredentials = true;
+    var vm = this;
+    vm.axios
+      .get("http://10.105.242.93:23333/rinne/GetProblemList/")
       .then(response => {
-        this.articles = response.data.problem;
-        this.done = true;
-        console.log(response);
+        vm.desserts = response.data.problem;
+        vm.pagination.totalItems = vm.desserts.length;
+      })
+      .catch(function(error) {
+        console.log(error);
       });
   },
   data() {
     return {
-      done: false,
-      articles: [[]],
-      page: 1
+      done: true,
+      search: "",
+      pagination: {},
+      text_per_page: [10],
+      headers: [
+        { text: "UID", align: "left", sortable: false, value: "uid" },
+        { text: "Name", sortable: false, value: "name" },
+        { text: "Time Limit", sortable: false, value: "time_limit" },
+        { text: "Memory Limit", sortable: false, value: "memory_limit" },
+        { text: "Owner", sortable: false, value: "superadmin" }
+      ],
+      desserts: [{}]
     };
   },
-  components: {}
+  computed: {
+    pages() {
+      if (
+        this.pagination.rowsPerPage == null ||
+        this.pagination.totalItems == null
+      )
+        return 0;
+      else
+        return Math.ceil(
+          this.pagination.totalItems / this.pagination.rowsPerPage
+        );
+    }
+  },
+  methods: {}
 };
 </script>
-<style>
-a {
-  text-decoration: blink;
-}
-</style>

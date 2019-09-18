@@ -106,6 +106,6 @@ new Vue({
 	components: { App },
 	template: '<App/>',
 })
-import '@/vuetify.css';
+import 'vuetify/dist/vuetify.min.css'
 Vue.prototype.$axios = axios
-axios.defaults.withCredentials=true;
+axios.defaults.withCredentials = true;

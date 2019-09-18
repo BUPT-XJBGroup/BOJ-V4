@@ -1,5 +1,7 @@
 <template>
-  <v-flex v-html="renderContent"></v-flex>
+  <v-card-text>
+    <v-flex v-html="renderContent"></v-flex>
+  </v-card-text>
 </template>
 <script>
 import { DisableHtml, EnableHtml } from "@/katex";

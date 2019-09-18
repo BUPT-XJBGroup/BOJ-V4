@@ -79,12 +79,11 @@ def SelfInfo(request):
 
 '''
 API /rinne/GetProblemList
-Given the page, return corresponding list of problem list
+return list of problem list
 '''
 
 
 def GetProblemList(request):
-    page = int(request.GET.get("page")) if 'page' in request.GET else 1
     key = int(request.GET.get("key")) if 'key' in request.GET else ""
     context = {}
     gp_can_view = get_objects_for_user(
@@ -110,14 +109,9 @@ def GetProblemList(request):
 
     problem_can_change_qs |= problem_can_delete_qs
     problem_can_view_qs |= problem_can_change_qs
-    LL = (page - 1) * 20
-    RR = min(LL + 20, len(problem_can_view_qs))
-    if LL < len(problem_can_view_qs):
-        context['status'] = "OK"
-        context['from'] = request.user.username
-        context['problem'] = [[i.id, i.title] for i in problem_can_view_qs[LL:RR]]
-    else:
-        context['status'] = "No Such Page or The List is Empty"
+    context['status'] = "OK"
+    context['from'] = request.user.username
+    context['problem'] = [{"solved": False, "uid": i.id, "name": i.title, "time_limit": i.time_limit, "memory_limit": i.memory_limit, "superadmin": i.superadmin.username} for i in problem_can_view_qs]
     return HttpResponse(json.dumps(context))
 
 
@@ -138,6 +132,7 @@ def GetProblem(request):
         foo = problem_set[0]
         if request.user.has_perm('problem.change_problem', foo):
             context['status'] = "OK"
+            context['title'] = request.user.username
             context['from'] = request.user.username
             context['id'] = foo.id
             context['time_limit'] = foo.time_limit
@@ -165,7 +160,7 @@ Given the page, return corresponding list of Announcement list
 
 
 def GetAnnouncementList(request):
-    context = {}
+    context = [1]
     return HttpResponse(json.dumps(context))
 
 
@@ -176,5 +171,10 @@ Given the index, return corresponding Announcement
 
 
 def GetAnnouncement(request):
-    context = {}
+    context = [1]
+    return HttpResponse(json.dumps(context))
+
+
+def test(request):
+    context = [1]
     return HttpResponse(json.dumps(context))

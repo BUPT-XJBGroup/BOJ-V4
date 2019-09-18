@@ -11,7 +11,7 @@ from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
 from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 from .views import HomepageView
-from lib.views import QueryUser, SelfInfo, GetProblemList, GetProblem, GetAnnouncement, GetAnnouncementList
+from lib.views import QueryUser, SelfInfo, GetProblemList, GetProblem, GetAnnouncement, GetAnnouncementList,test
 
 router = routers.DefaultRouter()
 #  router.register(r'profiles', UserProfileViewSet)
@@ -41,12 +41,13 @@ urlpatterns = [
     url(r"^api-auth/", include('rest_framework.urls', namespace="rest_framework")),
 
 
-    url(r"^rinne/QueryUser", QueryUser),
-    url(r"^rinne/SelfInfo", SelfInfo),
-    url(r"^rinne/GetProblemList", GetProblemList),
-    url(r"^rinne/GetProblem", GetProblem),
-    url(r"^rinne/GetAnnouncementList", GetAnnouncementList),
-    url(r"^rinne/GetAnnouncement", GetAnnouncement),
+    url(r"^rinne/QueryUser/", QueryUser),
+    url(r"^rinne/SelfInfo/", SelfInfo),
+    url(r"^rinne/GetProblemList/", GetProblemList),
+    url(r"^rinne/GetProblemDetails/", GetProblem),
+    url(r"^rinne/GetAnnouncementList/", GetAnnouncementList),
+    url(r"^rinne/GetAnnouncementDetails/", GetAnnouncement),
+    url(r"^rinne/test/", test),
 
     
     url(r'^', include('filer.server.urls')),

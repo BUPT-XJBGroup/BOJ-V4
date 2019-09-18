@@ -96,6 +96,11 @@
               <img src="https://avatars2.githubusercontent.com/u/38785664?s=400" />
             </v-avatar>
           </a>
+          <a href="https://github.com/Myriad-Dreamin">
+            <v-avatar size="135px" tile>
+              <img src="https://avatars2.githubusercontent.com/u/35292584?s=400" />
+            </v-avatar>
+          </a>
         </v-flex>
         <v-divider />
         <v-card-title class="headline">Copyright 2016-2019 BUPT ACM Team.All Rights Reserved</v-card-title>

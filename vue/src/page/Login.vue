@@ -28,6 +28,7 @@ import Store from "@/store.js";
 import router from "@/router.js";
 export default {
   mounted() {
+    this.axios.defaults.withCredentials = true;
     try {
       this.error = this.$route.params.text;
     } catch (e) {

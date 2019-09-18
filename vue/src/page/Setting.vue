@@ -124,11 +124,6 @@
 <script>
 import Router from "@/router";
 export default {
-  methods: {
-    edit() {
-      Router.push({ name: "UpdateInfo" });
-    }
-  },
   mounted() {
     this.username = this.$store.getters.username;
     this.nickname = this.$store.getters.nickname;
@@ -158,28 +153,10 @@ export default {
     password2: ""
   }),
   methods: {
-    submit() {
-      if (this.check()) {
-        this.axios
-          .post(
-            "http://localhost:8000/updateuser",
-            JSON.stringify({
-              username: this.username,
-              password: this.password0,
-              newpassword:
-                this.password1 == "" ? this.password0 : this.password1,
-              email: this.email
-            })
-          )
-          .then(res => {
-            if (res.data == "Done") {
-              router.push("logout");
-            } else {
-              this.error = res.data;
-            }
-          });
-      }
+    edit() {
+      Router.push({ name: "UpdateInfo" });
     },
+    submit() {},
     check() {
       if (this.password0 == "") {
         this.error = "Old password cannot be empty";
