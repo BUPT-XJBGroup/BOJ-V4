@@ -68,9 +68,9 @@ export default {
           router: "/setting",
         },
         {
-          text: "Articles",
+          text: "Problem",
           image: "mdi-coffin",
-          router: "/articles",
+          router: "/problems",
         },
         {
           text: "About",

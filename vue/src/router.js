@@ -4,19 +4,19 @@ import Setting from '@/page/Setting'
 import About from '@/page/About'
 import Add from '@/page/Add'
 import Markdown from '@/page/Markdown'
-import Articles from '@/page/Articles'
+import Problems from '@/page/Problems'
 import Login from '@/page/Login'
 import Logout from '@/page/Logout'
-import Article from '@/page/Article'
+import Problem from '@/page/Problem'
 import Error from '@/page/Error'
 import Edit from '@/page/Edit'
 import Register from '@/page/Register'
+import Dev from '@/page/Dev'
 
 Vue.use(Router)
 
 export default new Router({
-  routes: [
-    {
+  routes: [{
       path: '/markdown',
       name: 'Markdown',
       component: Markdown
@@ -48,14 +48,17 @@ export default new Router({
       }
     },
     {
-      path: '/articles',
-      name: 'Articles',
-      component: Articles
+      path: '/problems',
+      name: 'Problems',
+      component: Problems,
+      meta: {
+        NeedStaff: true
+      }
     },
     {
-      path: '/article/:id',
-      name: 'Article',
-      component: Article
+      path: '/problem/:id',
+      name: 'Problem',
+      component: Problem
     },
     {
       path: '/error',
@@ -76,6 +79,11 @@ export default new Router({
       path: '/register',
       name: 'Register',
       component: Register
-    }
+    },
+    {
+      path: '/',
+      name: 'Dev',
+      component: Dev,
+    },
   ]
 })

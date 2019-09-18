@@ -24,6 +24,13 @@
             <v-card-title class="headline">BOJV4-Refreshed</v-card-title>
             <v-card-title class="headline">Supported By Vue and Vuetify</v-card-title>
             <v-card-title class="headline">Develop And Maintain By BUPT ACM Team</v-card-title>
+            <v-card-title class="headline">
+              <a style="color:black;">Contact:</a>
+              <a
+                href="mailto:buptacm@qq.com"
+                style="color:#80407B;text-decoration: blink;"
+              >buptacm@qq.com</a>
+            </v-card-title>
           </v-card-text>
         </v-flex>
       </v-layout>
@@ -32,7 +39,7 @@
       <v-card-text>
         <v-card-title class="headline">Develop Team</v-card-title>
         <v-divider />
-        <v-flex xs6>
+        <v-flex>
           <a href="https://github.com/wangzitian0">
             <v-avatar size="135px" tile>
               <img src="https://avatars3.githubusercontent.com/u/8103666?s=400" />
@@ -55,7 +62,7 @@
           </a>
         </v-flex>
 
-        <v-flex xs6>
+        <v-flex>
           <a href="https://github.com/birdstorm">
             <v-avatar size="135px" tile>
               <img src="https://avatars0.githubusercontent.com/u/15857134?s=400" />
@@ -78,7 +85,7 @@
           </a>
         </v-flex>
 
-        <v-flex xs6>
+        <v-flex>
           <a href="https://github.com/hoowater">
             <v-avatar size="135px" tile>
               <img src="https://avatars2.githubusercontent.com/u/10193211?s=400" />
@@ -90,15 +97,8 @@
             </v-avatar>
           </a>
         </v-flex>
-
+        <v-divider />
         <v-card-title class="headline">Copyright 2016-2019 BUPT ACM Team.All Rights Reserved</v-card-title>
-        <v-card-title class="headline">
-          <a style="color:black;">Contact:</a>
-          <a
-            href="mailto:buptacm@qq.com"
-            style="color:#80407B;text-decoration: blink;"
-          >buptacm@qq.com</a>
-        </v-card-title>
       </v-card-text>
     </v-card>
   </div>
