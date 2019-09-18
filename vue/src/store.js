@@ -97,7 +97,6 @@ const store = new Vuex.Store({
       commit("userNickname", nickname);
     },
     initState({ commit }, data) {
-      console.log(data);
       commit("userEmail", data.email);
       commit("userStatus", data.username);
       commit("userIsStaff", data.is_staff);

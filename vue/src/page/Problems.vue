@@ -49,7 +49,7 @@ export default {
       done: true,
       search: "",
       pagination: {},
-      text_per_page: [10],
+      text_per_page: [12],
       headers: [
         { text: "UID", align: "left", sortable: false, value: "uid" },
         { text: "Name", sortable: false, value: "name" },

@@ -34,6 +34,12 @@ code {
   line-height: 23px;
   font-size: 15px;
 }
+code:after,
+code:before,
+kbd:after,
+kbd:before {
+  content: none;
+}
 pre {
   width: 65em;
 }

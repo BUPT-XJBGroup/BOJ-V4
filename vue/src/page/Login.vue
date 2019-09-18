@@ -28,23 +28,11 @@ import Store from "@/store.js";
 import router from "@/router.js";
 export default {
   mounted() {
-    this.axios.defaults.withCredentials = true;
     try {
       this.error = this.$route.params.text;
     } catch (e) {
       this.error = "";
     }
-    var vm = this;
-    this.axios.get("http://10.105.242.93:23333/accounts/login/").then(res => {
-      console.log(res);
-      var arr,
-        reg = new RegExp("csrfmiddlewaretoken' value='(.*)'");
-      if ((arr = res.data.match(reg))) {
-        vm.csrfmiddlewaretoken = unescape(arr[1]);
-        document.cookie = "csrftoken=" + escape(unescape(arr[1])) + ";";
-      } else console.log("not found crsf value");
-      console.log(vm.csrfmiddlewaretoken);
-    });
   },
   data: () => ({
     csrfmiddlewaretoken: "",
@@ -55,22 +43,36 @@ export default {
   methods: {
     login() {
       if (this.check()) {
-        var form =
-          "csrfmiddlewaretoken=" +
-          escape(this.csrfmiddlewaretoken) +
-          "&username=" +
-          escape(this.username) +
-          "&password=" +
-          escape(this.password);
         var vm = this;
+        this.axios.defaults.withCredentials = true;
         this.axios
-          .post("http://10.105.242.93:23333/accounts/login/", form)
-          .catch(res => {
-            vm.error = res;
-            return;
+          .get("http://10.105.242.93:23333/accounts/login/")
+          .then(res => {
+            var reg = new RegExp("csrfmiddlewaretoken' value='(.*)'");
+            var arr;
+            if ((arr = res.data.match(reg))) {
+              vm.csrfmiddlewaretoken = unescape(arr[1]);
+              document.cookie = "csrftoken=" + escape(unescape(arr[1])) + ";";
+              var form =
+                "csrfmiddlewaretoken=" +
+                escape(this.csrfmiddlewaretoken) +
+                "&username=" +
+                escape(this.username) +
+                "&password=" +
+                escape(this.password);
+              this.axios
+                .post("http://10.105.242.93:23333/accounts/login/", form)
+                .then(res => {
+                  this.axios
+                    .get("http://10.105.242.93:23333/rinne/SelfInfo/")
+                    .then(res => {
+                      Store.dispatch("initState", res.data).then(() => {
+                        router.push("/");
+                      });
+                    });
+                });
+            } else console.log("not found crsf value");
           });
-        console.log("OK");
-        this.showname();
       }
     },
     check() {
@@ -83,19 +85,6 @@ export default {
       } else {
         return true;
       }
-    },
-    showname() {
-      var vm = this;
-      this.axios
-        .get("http://10.105.242.93:23333/rinne/SelfInfo")
-        .then(res => {
-          Store.dispatch("initState", res.data).then(() => {
-            router.push("/");
-          });
-        })
-        .catch(res => {
-          vm.error = res;
-        });
     }
   }
 };

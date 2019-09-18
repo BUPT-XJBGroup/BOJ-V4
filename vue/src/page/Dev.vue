@@ -10,21 +10,12 @@
       class="elevation-1"
     >
       <template v-slot:items="props">
-        <td :style="(done? 'background: peachpuff;':'')">{{ props.item.name }}</td>
-        <td
-          :style="(done? 'background: peachpuff;':'')"
-          class="text-xs-right"
-        >{{ props.item.calories }}</td>
-        <td :style="(done? 'background: peachpuff;':'')" class="text-xs-right">{{ props.item.fat }}</td>
-        <td
-          :style="(done? 'background: peachpuff;':'')"
-          class="text-xs-right"
-        >{{ props.item.carbs }}</td>
-        <td
-          :style="(done? 'background: peachpuff;':'')"
-          class="text-xs-right"
-        >{{ props.item.protein }}</td>
-        <td :style="(done? 'background: peachpuff;':'')" class="text-xs-right">{{ props.item.iron }}</td>
+        <td style="background: peachpuff;">{{ props.item.name }}</td>
+        <td style="background: peachpuff;">{{ props.item.calories }}</td>
+        <td style="background: peachpuff;">{{ props.item.fat }}</td>
+        <td style="background: peachpuff;">{{ props.item.carbs }}</td>
+        <td style="background: peachpuff;">{{ props.item.protein }}</td>
+        <td style="background: peachpuff;">{{ props.item.iron }}</td>
       </template>
     </v-data-table>
     <div class="text-xs-center pt-2">
@@ -37,9 +28,8 @@
 export default {
   mounted() {
     this.axios.defaults.withCredentials = true;
-    console.log(document.cookie);
     this.axios
-      .get("http://10.105.242.93:23333/rinne/GetProblemList/")
+      .get("http://10.105.242.93:23333/rinne/SelfInfo/")
       .then(res => {
         console.log(res);
       })
