@@ -73,28 +73,33 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
-                  <v-text-field
-                    v-model="password0"
-                    label="Old Password"
-                    hint="This Field must be Filled"
-                    type="password"
-                    outline
-                  />
-                  <v-text-field
-                    v-model="password1"
-                    label="New Password"
-                    hint="Leave Blank if donnot Want to Change"
-                    type="password"
-                    outline
-                  />
-                  <v-text-field
-                    v-model="password2"
-                    label="Repeat Password"
-                    hint="Repeat Your new Password"
-                    type="password"
-                    outline
-                  />
-                  <v-btn block type="submit">Submit</v-btn>
+                  <v-form @submit.prevent="submit">
+                    <v-text-field
+                      v-model="password0"
+                      label="Old Password"
+                      hint="This Field must be Filled"
+                      autocomplete="password"
+                      type="password"
+                      outline
+                    />
+                    <v-text-field
+                      v-model="password1"
+                      label="New Password"
+                      autocomplete="password"
+                      hint="Leave Blank if donnot Want to Change"
+                      type="password"
+                      outline
+                    />
+                    <v-text-field
+                      v-model="password2"
+                      label="Repeat Password"
+                      autocomplete="password"
+                      hint="Repeat Your new Password"
+                      type="password"
+                      outline
+                    />
+                    <v-btn block type="submit">Submit</v-btn>
+                  </v-form>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -156,26 +161,104 @@ export default {
     edit() {
       Router.push({ name: "UpdateInfo" });
     },
-    submit() {},
-    check() {
+    check1() {
+      if (this.email == "") {
+        this.error = "email cannot be empty";
+        return false;
+      } else if (!this.CheckEmail()) {
+        this.error = "email is not valid";
+        return false;
+      } else if (this.nickname == "") {
+        this.error = "nickname is empty";
+        return false;
+      } else if (this.gender == "") {
+        this.error = "gender is not valid";
+        return false;
+      } else {
+        return true;
+      }
+    },
+    click1() {
+      if (this.check1()) {
+        var vm = this;
+        this.axios.defaults.withCredentials = true;
+        var form =
+          "csrfmiddlewaretoken=" +
+          escape(this.$store.getters.Token) +
+          "&username=" +
+          escape(this.username) +
+          "&gender=" +
+          escape(this.gender) +
+          "&nickname=" +
+          escape(this.nickname) +
+          "&email=" +
+          escape(this.email);
+        this.axios
+          .get("http://10.105.242.93:23333/rinne/ChangeUserInfo/")
+          .then(res => {
+            if (res.data.status != "OK") {
+              this.error = res.data.status;
+            }
+          });
+      }
+    },
+    check2() {
       if (this.password0 == "") {
         this.error = "Old password cannot be empty";
         return false;
       } else if (this.password1 != this.password2) {
         this.error = "Confirmation mismatched";
         return false;
-      } else if (this.email == "") {
-        this.error = "email cannot be empty";
-        return false;
       } else if (this.username.password1 < 6) {
         this.error = "new password should at least 6 characters";
-        return false;
-      } else if (!this.CheckEmail()) {
-        this.error = "email is not valid";
         return false;
       } else {
         return true;
       }
+    },
+    click2() {
+      if (this.check2()) {
+        var vm = this;
+        this.axios.defaults.withCredentials = true;
+        var form =
+          "csrfmiddlewaretoken=" +
+          escape(this.$store.getters.Token) +
+          "&username=" +
+          escape(this.username) +
+          "&old_pass=" +
+          escape(this.password0) +
+          "&new_pass=" +
+          escape(this.password1);
+        this.axios
+          .get("http://10.105.242.93:23333/rinne/ChangeUserPower/")
+          .then(res => {
+            if (res.data.status != "OK") {
+              this.error = res.data.status;
+            }
+          });
+      }
+    },
+    click3() {
+      var vm = this;
+      this.axios.defaults.withCredentials = true;
+      var form =
+        "csrfmiddlewaretoken=" +
+        escape(this.$store.getters.Token) +
+        "&username=" +
+        escape(this.username) +
+        "&is_staff=" +
+        escape(this.SetStaff) +
+        "&is_teacher=" +
+        escape(this.SetTeacher) +
+        "&is_active=" +
+        escape(this.SetActive);
+      this.axios
+        .get("http://10.105.242.93:23333/rinne/ChangeUserPower/")
+        .then(res => {
+          if (res.data.status != "OK") {
+            this.error = res.data.status;
+          }
+        });
     },
     CheckEmail() {
       var reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;

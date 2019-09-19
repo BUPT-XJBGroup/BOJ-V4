@@ -39,6 +39,7 @@ export default {
       .then(response => {
         vm.desserts = response.data.problem;
         vm.pagination.totalItems = vm.desserts.length;
+        console.log(response);
       })
       .catch(function(error) {
         console.log(error);

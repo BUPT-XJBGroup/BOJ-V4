@@ -11,7 +11,7 @@ from submission.views import SubmissionViewSet
 from contest.views import ContestViewSet
 from ojuser.views import UserProfileViewSet, GroupProfileViewSet, GroupViewSet
 from .views import HomepageView
-from lib.views import QueryUser, SelfInfo, GetProblemList, GetProblem, GetAnnouncement, GetAnnouncementList, test, Login, Register, GetCSRF
+from lib.views import QueryUser, SelfInfo, GetProblemList, GetProblem, GetAnnouncement, GetAnnouncementList, test, Login, Register, GetCSRF, ChangeUserInfo, ChangeUserPass, ChangeUserPower
 
 router = routers.DefaultRouter()
 #  router.register(r'profiles', UserProfileViewSet)
@@ -51,6 +51,9 @@ urlpatterns = [
     url(r"^rinne/Register/", Register),
     url(r"^rinne/GetCSRF/", GetCSRF),
     url(r"^rinne/test/", test),
+    url(r"^rinne/ChangeUserInfo/", ChangeUserInfo),
+    url(r"^rinne/ChangeUserPass/", ChangeUserPass),
+    url(r"^rinne/ChangeUserPower/", ChangeUserPower),
 
 
     url(r'^', include('filer.server.urls')),

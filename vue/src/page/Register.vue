@@ -121,6 +121,9 @@ export default {
       } else if (this.gender == "") {
         this.error = "Gender is Empty";
         return false;
+      }else if (this.nickname == "") {
+        this.error = "Nickname is Empty";
+        return false;
       } else {
         return true;
       }

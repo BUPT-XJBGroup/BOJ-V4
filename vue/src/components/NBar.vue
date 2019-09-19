@@ -58,9 +58,9 @@ export default {
           router: "/logout",
         },
         {
-          text: "Markdown",
+          text: "Home",
           image: "mdi-spa",
-          router: "/markdown",
+          router: "/",
         },
         {
           text: "Setting",
