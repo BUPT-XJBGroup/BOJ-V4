@@ -47,6 +47,7 @@ export default {
       .then(r => {
         this.data = r.data.data;
         this.done = true;
+        console.log(r);
       })
       .catch(function(error) {
         console.log(error);

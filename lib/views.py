@@ -217,7 +217,7 @@ Useless Just for Test
 @ensure_csrf_cookie
 def test(request):
     context = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    return HttpResponse(json.dumps(request.user.is_authenticated()))
+    return HttpResponse(json.dumps(context))
 
 
 '''
@@ -292,17 +292,17 @@ Change User's Basic Infomation
 
 def ChangeUserInfo(request):
     context = {}
-    name = request.POST.get('username')
-    gender = request.POST.get('gender')
-    nickname = request.POST.get('nickname')
-    email = request.POST.get('email')
+    name = request.GET.get('username')
+    gender = request.GET.get('gender')
+    nickname = request.GET.get('nickname')
+    email = request.GET.get('email')
 
     operate_user = request.user
     if operate_user.username == name or operate_user.is_staff:
-        u = User.objects.filter(username=name)
+        u = User.objects.select_related('profile').get(username=name)
         if u:
             profile = u.profile
-            profile.gender = gender
+            profile.gender = gender[0]
             profile.nickname = nickname
             profile.save()
             u.email = email
@@ -323,16 +323,16 @@ Change User's Password
 
 def ChangeUserPass(request):
     context = {}
-    name = request.POST.get('username')
-    old_pass = request.POST.get('old_pass')
-    new_pass = request.POST.get('new_pass')
+    name = request.GET.get('username')
+    old_pass = request.GET.get('old_pass')
+    new_pass = request.GET.get('new_pass')
 
     operate_user = request.user
     if operate_user.username == name or operate_user.is_staff:
         u = User.objects.filter(username=name)
         if u:
-            if authenticate(username=username, password=password):
-                u.set_password(new_password)
+            if authenticate(username=name, password=old_pass):
+                u.set_password(new_pass)
                 u.save()
                 context["status"] = "OK"
             else:
@@ -352,21 +352,21 @@ Change User's Power,etc Teacher Admin and Active
 
 
 def ChangeUserPower(request):
+    # return HttpResponse("123")
     context = {}
-    name = request.POST.get('username')
-    is_staff = request.POST.get('is_staff')
-    is_teacher = request.POST.get('is_teacher')
-    is_active = request.POST.get('is_active')
-
+    name = request.GET.get('username')
+    is_staff = request.GET.get('is_staff')
+    is_teacher = request.GET.get('is_teacher')
+    is_active = request.GET.get('is_active')
     operate_user = request.user
     if operate_user.username == name or operate_user.is_staff:
-        u = User.objects.filter(username=name)
+        u = User.objects.select_related('profile').get(username=name)
         if u:
             profile = u.profile
-            profile.is_teacher = is_teacher
+            profile.is_teacher = (is_teacher == "true")
+            u.is_staff = (is_staff == "true")
+            u.is_active = (is_active == "true")
             profile.save()
-            u.is_staff = is_staff
-            u.is_active = is_active
             u.save()
             context["status"] = "OK"
         else:

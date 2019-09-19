@@ -65,7 +65,7 @@
                     </a>
                     <span>With Your Email</span>
                   </v-alert>
-                  <v-btn block type="submit">Submit</v-btn>
+                  <v-btn block @click="click1">Submit</v-btn>
                 </v-form>
               </v-card-text>
             </v-tab-item>
@@ -98,7 +98,7 @@
                       type="password"
                       outline
                     />
-                    <v-btn block type="submit">Submit</v-btn>
+                    <v-btn block @click="click2">Submit</v-btn>
                   </v-form>
                 </v-card-text>
               </v-card>
@@ -109,7 +109,7 @@
                   <v-switch v-model="SetTeacher" inset :label="`Is Teacher`"></v-switch>
                   <v-switch v-model="SetStaff" inset :label="`Is Staff`"></v-switch>
                   <v-switch v-model="SetActive" inset :label="`Is Active`"></v-switch>
-                  <v-btn block type="submit">Submit</v-btn>
+                  <v-btn block @click="click3">Submit</v-btn>
                 </v-sheet>
               </v-card>
               <v-card flat v-if="!this.isstaff">
@@ -182,19 +182,18 @@ export default {
       if (this.check1()) {
         var vm = this;
         this.axios.defaults.withCredentials = true;
-        var form =
-          "csrfmiddlewaretoken=" +
-          escape(this.$store.getters.Token) +
-          "&username=" +
-          escape(this.username) +
-          "&gender=" +
-          escape(this.gender) +
-          "&nickname=" +
-          escape(this.nickname) +
-          "&email=" +
-          escape(this.email);
         this.axios
-          .get("http://10.105.242.93:23333/rinne/ChangeUserInfo/")
+          .get(
+            "http://10.105.242.93:23333/rinne/ChangeUserInfo/" +
+              "?username=" +
+              escape(this.username) +
+              "&gender=" +
+              escape(this.gender) +
+              "&nickname=" +
+              escape(this.nickname) +
+              "&email=" +
+              escape(this.email)
+          )
           .then(res => {
             if (res.data.status != "OK") {
               this.error = res.data.status;
@@ -220,17 +219,16 @@ export default {
       if (this.check2()) {
         var vm = this;
         this.axios.defaults.withCredentials = true;
-        var form =
-          "csrfmiddlewaretoken=" +
-          escape(this.$store.getters.Token) +
-          "&username=" +
-          escape(this.username) +
-          "&old_pass=" +
-          escape(this.password0) +
-          "&new_pass=" +
-          escape(this.password1);
         this.axios
-          .get("http://10.105.242.93:23333/rinne/ChangeUserPower/")
+          .get(
+            "http://10.105.242.93:23333/rinne/ChangeUserPower/" +
+              "?username=" +
+              escape(this.username) +
+              "&old_pass=" +
+              escape(this.password0) +
+              "&new_pass=" +
+              escape(this.password1)
+          )
           .then(res => {
             if (res.data.status != "OK") {
               this.error = res.data.status;
@@ -239,22 +237,23 @@ export default {
       }
     },
     click3() {
+      console.log("333333333");
       var vm = this;
       this.axios.defaults.withCredentials = true;
-      var form =
-        "csrfmiddlewaretoken=" +
-        escape(this.$store.getters.Token) +
-        "&username=" +
-        escape(this.username) +
-        "&is_staff=" +
-        escape(this.SetStaff) +
-        "&is_teacher=" +
-        escape(this.SetTeacher) +
-        "&is_active=" +
-        escape(this.SetActive);
       this.axios
-        .get("http://10.105.242.93:23333/rinne/ChangeUserPower/")
+        .get(
+          "http://10.105.242.93:23333/rinne/ChangeUserPower/" +
+            "?username=" +
+            escape(this.username) +
+            "&is_staff=" +
+            escape(this.SetStaff) +
+            "&is_teacher=" +
+            escape(this.SetTeacher) +
+            "&is_active=" +
+            escape(this.SetActive)
+        )
         .then(res => {
+          console.log(res);
           if (res.data.status != "OK") {
             this.error = res.data.status;
           }
