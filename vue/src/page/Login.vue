@@ -35,7 +35,6 @@ export default {
     }
   },
   data: () => ({
-    csrfmiddlewaretoken: "",
     username: "",
     password: "",
     error: ""
@@ -45,35 +44,40 @@ export default {
       if (this.check()) {
         var vm = this;
         this.axios.defaults.withCredentials = true;
-        this.axios
-          .get("http://10.105.242.93:23333/accounts/login/")
-          .then(res => {
-            var reg = new RegExp("csrfmiddlewaretoken' value='(.*)'");
-            var arr;
-            if ((arr = res.data.match(reg))) {
-              vm.csrfmiddlewaretoken = unescape(arr[1]);
-              document.cookie = "csrftoken=" + escape(unescape(arr[1])) + ";";
-              var form =
-                "csrfmiddlewaretoken=" +
-                escape(this.csrfmiddlewaretoken) +
-                "&username=" +
-                escape(this.username) +
-                "&password=" +
-                escape(this.password);
-              this.axios
-                .post("http://10.105.242.93:23333/accounts/login/", form)
-                .then(res => {
-                  this.axios
-                    .get("http://10.105.242.93:23333/rinne/SelfInfo/")
-                    .then(res => {
-                      Store.dispatch("initState", res.data).then(() => {
-                        router.push("/");
-                      });
-                    });
-                });
-            } else console.log("not found crsf value");
-          });
+        if (this.$store.getters.Token == "") {
+          this.axios
+            .get("http://10.105.242.93:23333/rinne/GetCSRF/")
+            .then(res => {
+              Store.dispatch("setToken", res.data.CSRFToken);
+              this.send();
+            });
+        } else {
+          this.send();
+        }
       }
+    },
+    send() {
+      var form =
+        "csrfmiddlewaretoken=" +
+        escape(this.$store.getters.Token) +
+        "&username=" +
+        escape(this.username) +
+        "&password=" +
+        escape(this.password);
+      console.log(form);
+      console.log(this.$store.getters.Token);
+      this.axios
+        .post("http://10.105.242.93:23333/rinne/Login/", form)
+        .then(res => {
+          console.log(res);
+          if (res.data.status == "OK") {
+            Store.dispatch("initState", res.data.data).then(() => {
+              router.push("/");
+            });
+          } else {
+            this.error = "Login Faied";
+          }
+        });
     },
     check() {
       if (this.username == "") {

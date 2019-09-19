@@ -12,6 +12,7 @@ const store = new Vuex.Store({
     IsTeacher: sessionStorage.getItem("IsTeacher") == "true" ? true : false,
     gender: sessionStorage.getItem("gender") ? sessionStorage.getItem("gender") : "",
     nickname: sessionStorage.getItem("nickname") ? sessionStorage.getItem("nickname") : "",
+    token: sessionStorage.getItem("token") ? sessionStorage.getItem("token") : "",
   },
   getters: {
     username: function (state) {
@@ -38,6 +39,9 @@ const store = new Vuex.Store({
     IsTeacher: function (state) {
       return state.IsTeacher;
     },
+    Token: function (state) {
+      return state.token;
+    },
   },
   mutations: {
     userStatus(state, user) {
@@ -52,6 +56,7 @@ const store = new Vuex.Store({
         state.IsTeacher = false;
         state.nickname = "";
         state.gender = "";
+        state.token = "";
         sessionStorage.setItem("isLogin", "false");
         sessionStorage.setItem("username", "");
         sessionStorage.setItem("email", "");
@@ -59,44 +64,67 @@ const store = new Vuex.Store({
         sessionStorage.setItem("IsTeacher", "false");
         sessionStorage.setItem("nickname", "");
         sessionStorage.setItem("gender", "");
+        sessionStorage.setItem("token", "");
       }
     },
     userEmail(state, Url) {
       state.email = Url ? Url : "";
     },
     userIsStaff(state, IsStaff) {
-      state.IsStaff = IsStaff ;
+      state.IsStaff = IsStaff;
     },
     userIsTeacher(state, IsTeacher) {
-      state.IsTeacher = IsTeacher ;
+      state.IsTeacher = IsTeacher;
     },
     userGender(state, gender) {
       state.gender = gender == gender ? gender : "";
     },
     userNickname(state, nickname) {
       state.nickname = nickname == nickname ? nickname : "";
+    },
+    userToken(state, token) {
+      state.token = token == token ? token : "";
     }
   },
   actions: {
-    setUser({ commit }, username) {
+    setUser({
+      commit
+    }, username) {
       commit("userStatus", username);
     },
-    setEmail({ commit }, email) {
+    setEmail({
+      commit
+    }, email) {
       commit("userEmail", email);
     },
-    setStaff({ commit }, IsStaff) {
+    setStaff({
+      commit
+    }, IsStaff) {
       commit("userIsStaff", IsStaff);
     },
-    setStaff({ commit }, IsTeacher) {
+    setStaff({
+      commit
+    }, IsTeacher) {
       commit("userIsTeacher", IsTeacher);
     },
-    setStaff({ commit }, gender) {
+    setStaff({
+      commit
+    }, gender) {
       commit("userGender", gender);
     },
-    setStaff({ commit }, nickname) {
+    setStaff({
+      commit
+    }, nickname) {
       commit("userNickname", nickname);
     },
-    initState({ commit }, data) {
+    setToken({
+      commit
+    }, token) {
+      commit("userToken", token);
+    },
+    initState({
+      commit
+    }, data) {
       commit("userEmail", data.email);
       commit("userStatus", data.username);
       commit("userIsStaff", data.is_staff);
@@ -111,7 +139,9 @@ const store = new Vuex.Store({
       sessionStorage.setItem("gender", data.gender ? data.gender : "");
       sessionStorage.setItem("nickname", data.nickname ? data.nickname : "");
     },
-    logout({ commit }) {
+    logout({
+      commit
+    }) {
       commit("userStatus", "");
     }
   }

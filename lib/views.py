@@ -1,6 +1,9 @@
+import json
+import ojuser
+import account
+from ojuser import serializers
 from rest_framework_jwt.utils import jwt_decode_handler
 from django.shortcuts import render
-import json
 from django.http import HttpResponse
 from django.contrib.auth.models import User, Group
 from ojuser.models import GroupProfile, UserProfile
@@ -13,6 +16,10 @@ from problem.forms import ProblemForm
 from guardian.shortcuts import get_objects_for_user
 from django_tables2 import RequestConfig
 from ojuser.models import GroupProfile
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware import csrf
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password, check_password
 
 # This is The API for The Frontend
 # Old API is not Here
@@ -38,10 +45,10 @@ def GetUserInfo(name):
 
     context['username'] = name
 
-    context['email'] = user.profile.user.email
-    context['is_superuser'] = user.profile.user.is_superuser
-    context['is_staff'] = user.profile.user.is_staff
-    context['is_active'] = user.profile.user.is_active
+    context['email'] = user.email
+    context['is_superuser'] = user.is_superuser
+    context['is_staff'] = user.is_staff
+    context['is_active'] = user.is_active
 
     context['is_teacher'] = user.profile.is_teacher
     context['nickname'] = user.profile.nickname
@@ -52,7 +59,7 @@ def GetUserInfo(name):
         context['gender'] = "Male"
     else:
         context['gender'] = "Secret"
-    return HttpResponse(json.dumps(context))
+    return context
 
 
 '''
@@ -63,7 +70,7 @@ Get Some User's Information
 
 def QueryUser(request):
     username = request.GET.get("username")
-    return GetUserInfo(username)
+    return HttpResponse(json.dumps(GetUserInfo(username)))
 
 
 '''
@@ -74,7 +81,7 @@ Get Current Logged User's Information
 
 def SelfInfo(request):
     name = request.user.username
-    return GetUserInfo(name)
+    return HttpResponse(json.dumps(GetUserInfo(name)))
 
 
 '''
@@ -160,7 +167,7 @@ Given the page, return corresponding list of Announcement list
 
 
 def GetAnnouncementList(request):
-    context = [1]
+    context = {}
     return HttpResponse(json.dumps(context))
 
 
@@ -171,10 +178,56 @@ Given the index, return corresponding Announcement
 
 
 def GetAnnouncement(request):
-    context = [1]
+    context = {}
     return HttpResponse(json.dumps(context))
 
 
+@ensure_csrf_cookie
 def test(request):
-    context = [1]
+    context = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    return HttpResponse(json.dumps(context))
+
+
+def Login(request):
+    context = {}
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    user = authenticate(username=username, password=password)
+    if user:
+        context['status'] = "OK"
+        context['data'] = GetUserInfo(user.username)
+    else:
+        context['status'] = "Login Failed"
+    return HttpResponse(json.dumps(context))
+
+
+def Register(request):
+    context = {}
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    nickname = request.POST.get('nickname')
+    gender = request.POST.get('gender')[0]
+    email = request.POST.get('email')
+    u = User.objects.filter(username=username)
+    v = User.objects.filter(email=email)
+    if u:
+        context['status'] = 'User has existed'
+    elif v:
+        context['status'] = 'Email has existed'
+    else:
+        context['status'] = 'OK'
+        u = User.objects.create_user(username=username, email=email, password=password)
+        profile = u.profile
+        profile.nickname = nickname
+        profile.gender = gender
+        profile.save()
+        u.save()
+    return HttpResponse(json.dumps(context))
+
+
+def GetCSRF(request):
+    context = {}
+    token = csrf.get_token(request)
+    print("csrf:", token)
+    context['CSRFToken'] = token
     return HttpResponse(json.dumps(context))
